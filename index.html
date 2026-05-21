@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Raffle Wheel</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+    <main class="app">
+      <section class="wheel-panel" aria-label="Raffle wheel">
+        <div class="title-block">
+          <p class="eyebrow">Pick a winner</p>
+          <h1>Raffle Wheel</h1>
+        </div>
+
+        <div class="wheel-wrap">
+          <canvas id="wheelCanvas" width="560" height="560" aria-label="Colorful raffle wheel"></canvas>
+          <div class="pointer" aria-hidden="true"></div>
+        </div>
+
+        <button id="spinButton" class="primary-button" type="button" disabled>Spin</button>
+        <p id="winnerText" class="winner" aria-live="polite">Add names to start the raffle.</p>
+      </section>
+
+      <section class="controls-panel" aria-label="Participant controls">
+        <form id="nameForm" class="add-form">
+          <label for="nameInput">Participant name</label>
+          <div class="input-row">
+            <input
+              id="nameInput"
+              type="text"
+              maxlength="40"
+              autocomplete="off"
+              placeholder="Charlie Brown"
+            />
+            <button type="submit">Add Name</button>
+          </div>
+          <p id="messageText" class="message" aria-live="polite"></p>
+        </form>
+
+        <div class="list-header">
+          <h2>Participants</h2>
+          <button id="clearButton" class="ghost-button" type="button" disabled>Clear All</button>
+        </div>
+
+        <label class="option-row" for="removeIdenticalCheckbox">
+          <input id="removeIdenticalCheckbox" type="checkbox" />
+          <span>Remove Identical Names</span>
+        </label>
+
+        <p class="counter"><span id="countText">0</span>/100 names</p>
+        <ul id="nameList" class="name-list" aria-label="Participant list"></ul>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
