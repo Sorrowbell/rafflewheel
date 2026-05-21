@@ -1,5 +1,6 @@
 const MAX_NAMES = 100;
 const SPIN_TIME = 4200;
+const STORAGE_KEY = "raffleWheelNames";
 
 const colors = [
   "#e93f6f",
@@ -44,6 +45,8 @@ const confettiLayer = document.querySelector("#confettiLayer");
 let names = [];
 let currentRotation = 0;
 let isSpinning = false;
+let tickTimer = null;
+let audioContext = null;
 let shuffledColors = shuffleColors(colors);
 let nextColorIndex = 0;
 const assignedNameColors = {};
@@ -91,6 +94,31 @@ function showMessage(message) {
   messageText.textContent = message;
 }
 
+function saveNames() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(names));
+  } catch (error) {
+    showMessage("Names could not be saved in this browser.");
+  }
+}
+
+function loadNames() {
+  let savedNames = [];
+
+  try {
+    savedNames = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch (error) {
+    savedNames = [];
+  }
+
+  if (Array.isArray(savedNames)) {
+    names = savedNames
+      .map((name) => normalizeName(String(name)))
+      .filter(Boolean)
+      .slice(0, MAX_NAMES);
+  }
+}
+
 function addNameAtRandomSpot(name) {
   const randomIndex = Math.floor(Math.random() * (names.length + 1));
 
@@ -118,6 +146,7 @@ function renderNameList() {
     const label = document.createElement("span");
     const removeButton = document.createElement("button");
 
+    item.dataset.originalIndex = entry.originalIndex;
     nameGroup.className = "name-group";
     dot.className = "color-dot";
     dot.style.backgroundColor = getColorForName(entry.name);
@@ -218,6 +247,68 @@ function renderApp() {
   updateButtons();
 }
 
+function getAudioContext() {
+  if (!audioContext) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+      return null;
+    }
+
+    audioContext = new AudioContextClass();
+  }
+
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+
+  return audioContext;
+}
+
+function playTickSound() {
+  const context = getAudioContext();
+
+  if (!context) {
+    return;
+  }
+
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const now = context.currentTime;
+
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(820, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.08, now + 0.006);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.05);
+}
+
+function startTicking() {
+  let tickDelay = 62;
+
+  stopTicking();
+
+  function scheduleNextTick() {
+    playTickSound();
+    tickDelay = Math.min(tickDelay + 8, 210);
+    tickTimer = window.setTimeout(scheduleNextTick, tickDelay);
+  }
+
+  scheduleNextTick();
+}
+
+function stopTicking() {
+  if (tickTimer) {
+    window.clearTimeout(tickTimer);
+    tickTimer = null;
+  }
+}
+
 function celebrateWinner() {
   confettiLayer.innerHTML = "";
 
@@ -261,6 +352,7 @@ function addName(event) {
   }
 
   addNameAtRandomSpot(newName);
+  saveNames();
   nameInput.value = "";
   winnerText.textContent = "Ready when you are.";
   showMessage("");
@@ -286,6 +378,7 @@ function removeName(indexToRemove) {
     winnerText.textContent = `${removedName} was removed.`;
   }
 
+  saveNames();
   showMessage("");
   renderApp();
 }
@@ -314,8 +407,10 @@ function spinWheel() {
 
   isSpinning = true;
   updateButtons();
+  clearWinnerHighlights();
   showMessage("");
   winnerText.textContent = "Spinning...";
+  startTicking();
 
   const sliceDegrees = 360 / names.length;
   const fairWinnerIndex = Math.floor(Math.random() * names.length);
@@ -331,31 +426,50 @@ function spinWheel() {
     const winnerIndex = getWinnerIndex(currentRotation);
     const winnerName = names[winnerIndex];
 
+    stopTicking();
     winnerText.textContent = `Winner: ${winnerName}`;
     celebrateWinner();
-
-    // Freeze the visual result briefly, then reset the wheel for the next round.
-    window.setTimeout(() => {
-      canvas.style.transition = "none";
-      canvas.style.transform = "rotate(0deg)";
-      currentRotation = 0;
-      isSpinning = false;
-      renderApp();
-
-      window.requestAnimationFrame(() => {
-        canvas.style.transition = "";
-        updateButtons();
-      });
-    }, 650);
+    highlightWinner(winnerIndex);
+    resetWheelAfterSpin();
   }, SPIN_TIME);
+}
+
+function highlightWinner(winnerIndex) {
+  const winnerItem = nameList.querySelector(`[data-original-index="${winnerIndex}"]`);
+
+  if (winnerItem) {
+    winnerItem.classList.add("winner-highlight");
+  }
+}
+
+function clearWinnerHighlights() {
+  nameList.querySelectorAll(".winner-highlight").forEach((winnerItem) => {
+    winnerItem.classList.remove("winner-highlight");
+  });
+}
+
+function resetWheelAfterSpin() {
+  window.setTimeout(() => {
+    canvas.style.transition = "none";
+    canvas.style.transform = "rotate(0deg)";
+    currentRotation = 0;
+    isSpinning = false;
+
+    window.requestAnimationFrame(() => {
+      canvas.style.transition = "";
+      updateButtons();
+    });
+  }, 650);
 }
 
 function clearAllNames() {
   names = [];
   currentRotation = 0;
   canvas.style.transform = "rotate(0deg)";
+  stopTicking();
   winnerText.textContent = "Add names to start the raffle.";
   showMessage("");
+  saveNames();
   renderApp();
 }
 
@@ -364,4 +478,5 @@ spinButton.addEventListener("click", spinWheel);
 clearButton.addEventListener("click", clearAllNames);
 removeIdenticalCheckbox.addEventListener("change", renderNameList);
 
+loadNames();
 renderApp();

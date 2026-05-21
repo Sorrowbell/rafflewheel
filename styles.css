@@ -292,6 +292,31 @@ input[type="checkbox"] {
   padding: 0.45rem 0.7rem;
   background: #fff;
   font-weight: 700;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.name-list li.winner-highlight {
+  background: #fff6d8;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(255, 190, 61, 0.28);
+  animation: winner-flash 1.55s ease;
+}
+
+@keyframes winner-flash {
+  0%,
+  100% {
+    background: #fff;
+    transform: scale(1);
+  }
+
+  25%,
+  70% {
+    background: #fff6d8;
+    transform: scale(1.02);
+  }
 }
 
 .name-group {
@@ -329,13 +354,41 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 820px) {
+  body {
+    min-height: auto;
+  }
+
   .app {
     grid-template-columns: 1fr;
     align-items: start;
+    gap: 1rem;
+    min-height: auto;
+    padding: 1rem 0;
   }
 
   .controls-panel {
     align-self: auto;
+  }
+
+  .wheel-panel {
+    padding: 1.25rem;
+  }
+
+  h1 {
+    margin-bottom: 0.9rem;
+  }
+
+  .wheel-wrap {
+    width: min(100%, 28rem);
+  }
+
+  .primary-button {
+    margin-top: 0.9rem;
+  }
+
+  .winner {
+    min-height: 2.5rem;
+    margin-top: 0.75rem;
   }
 }
 
@@ -347,15 +400,70 @@ input[type="checkbox"] {
 
   .wheel-panel,
   .controls-panel {
-    padding: 1rem;
+    padding: 0.85rem;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+  }
+
+  h1 {
+    font-size: 2.35rem;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  .wheel-wrap {
+    width: min(100%, 21.5rem);
+  }
+
+  .pointer {
+    right: -0.1rem;
+    border-top-width: 0.75rem;
+    border-bottom-width: 0.75rem;
+    border-right-width: 1.55rem;
   }
 
   .input-row {
     grid-template-columns: 1fr;
   }
 
+  .input-row button,
+  .ghost-button,
+  input {
+    min-height: 2.65rem;
+  }
+
+  .list-header {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .name-list {
+    max-height: 18rem;
+  }
+
+  .name-list li {
+    gap: 0.45rem;
+    padding: 0.42rem 0.55rem;
+  }
+
+  .remove-button {
+    min-height: 1.85rem;
+    padding: 0 0.5rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 380px) {
   .list-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .wheel-wrap {
+    width: min(100%, 19rem);
   }
 }
