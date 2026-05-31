@@ -91,11 +91,7 @@ button:disabled {
 }
 
 .hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.15rem;
 }
 
 .eyebrow {
@@ -126,19 +122,10 @@ h2 {
   line-height: 1.15;
 }
 
-.hero-copy {
-  max-width: 42rem;
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 1.03rem;
-  line-height: 1.55;
-}
-
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 1rem;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
 }
 
 .stat-card,
@@ -169,18 +156,18 @@ h2 {
   line-height: 1;
 }
 
-.workspace {
+.event-layout {
   display: grid;
-  grid-template-columns: minmax(26rem, 1.18fr) minmax(20rem, 0.82fr);
-  gap: 1rem;
+  grid-template-columns: minmax(27rem, 1fr) minmax(21rem, 0.95fr);
+  gap: 1.15rem;
   align-items: stretch;
+  margin-bottom: 1.15rem;
 }
 
-.lower-grid {
+.event-rail {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.7fr);
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: 1.15rem;
+  align-content: start;
 }
 
 .wheel-card,
@@ -190,14 +177,12 @@ h2 {
 
 .wheel-card {
   display: grid;
-  grid-template-rows: auto 1fr auto auto auto;
-  min-height: 44rem;
+  grid-template-rows: auto auto auto auto auto auto;
+  min-height: auto;
 }
 
-.side-stack {
+.prize-field {
   display: grid;
-  gap: 1rem;
-  align-content: start;
 }
 
 .section-heading {
@@ -221,9 +206,8 @@ h2 {
 }
 
 .odds-text {
-  margin: 0;
+  margin: 0.25rem 0 0;
   font-weight: 800;
-  text-align: right;
 }
 
 .helper-text {
@@ -233,12 +217,13 @@ h2 {
 .wheel-stage {
   display: grid;
   place-items: center;
+  margin-top: 0.25rem;
   min-height: 0;
 }
 
 .wheel-wrap {
   position: relative;
-  width: min(100%, 38rem);
+  width: min(100%, 28.5rem);
   aspect-ratio: 1;
 }
 
@@ -266,8 +251,8 @@ canvas {
 .winner-display {
   display: grid;
   gap: 0.2rem;
-  min-height: 5.2rem;
-  margin-top: 1rem;
+  min-height: 4.6rem;
+  margin-top: 0.75rem;
   border: 1px solid #ead8a7;
   border-radius: 8px;
   padding: 0.9rem 1rem;
@@ -284,7 +269,7 @@ canvas {
 }
 
 .winner-display strong {
-  font-size: clamp(1.7rem, 5vw, 3.1rem);
+  font-size: clamp(1.55rem, 4vw, 2.45rem);
   line-height: 1.05;
 }
 
@@ -306,8 +291,8 @@ canvas {
 
 .spin-button {
   width: min(100%, 20rem);
-  min-height: 3.35rem;
-  margin: 1rem auto 0.65rem;
+  min-height: 3rem;
+  margin: 0.75rem auto 0.35rem;
   color: #fff;
   background: var(--accent);
   font-size: 1.08rem;
@@ -318,9 +303,17 @@ canvas {
   background: var(--accent-dark);
 }
 
+.ticket-entry-panel,
+.participant-panel,
+.host-controls-panel {
+  margin-top: 1.15rem;
+}
+
 .ticket-form {
   display: grid;
-  gap: 0.52rem;
+  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.32fr) auto;
+  gap: 0.75rem;
+  align-items: end;
 }
 
 label,
@@ -333,7 +326,7 @@ label,
 .prize-label {
   display: flex;
   justify-content: space-between;
-  margin: 1rem 0 0.45rem;
+  margin: 0 0 0.45rem;
 }
 
 .prize-label span {
@@ -354,12 +347,6 @@ input {
 input:focus {
   border-color: var(--brand);
   outline: 3px solid rgba(45, 124, 127, 0.16);
-}
-
-.quantity-row {
-  display: grid;
-  grid-template-columns: minmax(6rem, 0.45fr) minmax(9rem, 1fr);
-  gap: 0.55rem;
 }
 
 .ticket-form button,
@@ -390,7 +377,7 @@ input:focus {
 
 .message {
   min-height: 1.25rem;
-  margin: 0.15rem 0 0;
+  margin: 0.7rem 0 0;
   color: var(--accent-dark);
   font-weight: 800;
 }
@@ -400,7 +387,8 @@ input:focus {
 }
 
 .control-grid {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.55rem;
 }
 
@@ -462,7 +450,7 @@ input:focus {
 .participant-list {
   display: grid;
   gap: 0.55rem;
-  max-height: 32rem;
+  max-height: 34rem;
   overflow: auto;
   padding-right: 0.2rem;
 }
@@ -554,7 +542,7 @@ input:focus {
 .winner-log-list {
   display: grid;
   gap: 0.55rem;
-  max-height: 32rem;
+  max-height: 34rem;
   margin: 0;
   padding: 0;
   overflow: auto;
@@ -614,10 +602,19 @@ input:focus {
   list-style: none;
 }
 
+.compact-button {
+  min-height: 2.45rem;
+  padding: 0 0.75rem;
+  white-space: nowrap;
+}
+
 @media (max-width: 1040px) {
-  .workspace,
-  .lower-grid {
+  .event-layout {
     grid-template-columns: 1fr;
+  }
+
+  .event-rail {
+    grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
   }
 
   .wheel-card {
@@ -636,13 +633,41 @@ input:focus {
     padding-top: 0.75rem;
   }
 
-  .hero,
-  .section-heading {
+  .event-layout {
+    display: flex;
     flex-direction: column;
   }
 
+  .event-rail {
+    display: contents;
+  }
+
   .stats-grid {
-    grid-template-columns: 1fr;
+    order: 1;
+  }
+
+  .wheel-card {
+    order: 2;
+  }
+
+  .winner-log-panel {
+    order: 3;
+  }
+
+  .ticket-entry-panel {
+    order: 4;
+  }
+
+  .participant-panel {
+    order: 5;
+  }
+
+  .host-controls-panel {
+    order: 6;
+  }
+
+  .section-heading {
+    flex-direction: column;
   }
 
   .wheel-card,
@@ -653,6 +678,23 @@ input:focus {
 
   .wheel-wrap {
     width: min(100%, 28rem);
+  }
+
+  .prize-field {
+    order: 1;
+  }
+
+  .wheel-stage {
+    order: 2;
+  }
+
+  .spin-button {
+    order: 3;
+    margin: 0.8rem auto 0;
+  }
+
+  .winner-display {
+    order: 4;
   }
 
   .winner-display {
@@ -674,19 +716,15 @@ input:focus {
   .participant-actions button {
     flex: 1 1 auto;
   }
+
+  .ticket-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 460px) {
   h1 {
     font-size: 2.65rem;
-  }
-
-  .hero-copy {
-    font-size: 0.95rem;
-  }
-
-  .quantity-row {
-    grid-template-columns: 1fr;
   }
 
   .wheel-wrap {
