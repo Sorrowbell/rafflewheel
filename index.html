@@ -3,56 +3,125 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Raffle Wheel</title>
+    <title>First Tech CU4Kids Raffle Friendraiser</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
-    <main class="app">
-      <section class="wheel-panel" aria-label="Raffle wheel">
-        <div class="title-block">
-          <p class="eyebrow">Pick a winner</p>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">First Tech CU4Kids Raffle Friendraiser!</p>
           <h1>Raffle Wheel</h1>
         </div>
+      </header>
 
-        <div class="wheel-wrap">
-          <canvas id="wheelCanvas" width="560" height="560" aria-label="Colorful raffle wheel"></canvas>
-          <div class="pointer" aria-hidden="true"></div>
-        </div>
-
-        <button id="spinButton" class="primary-button" type="button" disabled>Spin</button>
-        <p id="winnerText" class="winner" aria-live="polite">Add names to start the raffle.</p>
+      <section class="stats-grid" aria-label="Raffle statistics">
+        <article class="stat-card">
+          <span>Total Tickets</span>
+          <strong id="totalTicketsText">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Unique Participants</span>
+          <strong id="uniqueParticipantsText">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Winners Drawn</span>
+          <strong id="winnersDrawnText">0</strong>
+        </article>
       </section>
 
-      <section class="controls-panel" aria-label="Participant controls">
-        <form id="nameForm" class="add-form">
-          <label for="nameInput">Participant name</label>
-          <div class="input-row">
-            <input
-              id="nameInput"
-              type="text"
-              maxlength="40"
-              autocomplete="off"
-              placeholder="Charlie Brown"
-            />
-            <button type="submit">Add Name</button>
+      <section class="workspace">
+        <section class="wheel-card" aria-label="Raffle wheel">
+          <div class="section-heading">
+            <div>
+              <h2>Spin the Wheel</h2>
+            </div>
+            <p id="oddsText" class="odds-text">Add tickets to begin.</p>
           </div>
-          <p id="messageText" class="message" aria-live="polite"></p>
-        </form>
 
-        <div class="list-header">
-          <h2>Participants</h2>
-          <button id="clearButton" class="ghost-button" type="button" disabled>Clear All</button>
-        </div>
+          <div class="wheel-stage">
+            <div class="wheel-wrap">
+              <canvas id="wheelCanvas" width="720" height="720" aria-label="Colorful raffle wheel"></canvas>
+              <div class="pointer" aria-hidden="true"></div>
+            </div>
+          </div>
 
-        <label class="option-row" for="removeIdenticalCheckbox">
-          <input id="removeIdenticalCheckbox" type="checkbox" />
-          <span>Remove Identical Names</span>
-        </label>
+          <div class="winner-display" aria-live="polite">
+            <span>Winner</span>
+            <strong id="winnerNameText">No winner yet</strong>
+            <em id="winnerPrizeText"></em>
+          </div>
 
-        <p class="counter"><span id="countText">0</span>/100 names</p>
-        <ul id="nameList" class="name-list" aria-label="Participant list"></ul>
+          <button id="spinButton" class="spin-button" type="button" disabled>Spin for Winner</button>
+          <p class="helper-text">
+            Winner selection is made from the full ticket-entry array. Duplicate names are separate tickets.
+          </p>
+        </section>
+
+        <aside class="side-stack">
+          <section class="panel" aria-label="Ticket entry">
+            <div class="section-heading compact">
+              <div>
+                <h2>Add Entries</h2>
+              </div>
+            </div>
+
+            <form id="ticketForm" class="ticket-form">
+              <label for="nameInput">Participant name</label>
+              <input id="nameInput" type="text" maxlength="60" autocomplete="off" placeholder="Sarah Martinez" />
+
+              <label for="ticketQuantityInput">Ticket quantity</label>
+              <div class="quantity-row">
+                <input id="ticketQuantityInput" type="number" min="1" step="1" value="1" inputmode="numeric" />
+                <button type="submit">Add Tickets</button>
+              </div>
+              <p id="messageText" class="message" aria-live="polite"></p>
+            </form>
+
+            <label for="prizeInput" class="prize-label">Current prize <span>optional</span></label>
+            <input id="prizeInput" type="text" maxlength="80" autocomplete="off" placeholder="Wine Basket" />
+            <p class="helper-text">If filled in, this prize is saved with the next winner log entry.</p>
+          </section>
+
+          <details class="panel host-controls-panel" aria-label="Host controls">
+            <summary>
+              <span>Host Controls</span>
+              <small>Clear, export, or reset raffle data</small>
+            </summary>
+            <div class="control-grid">
+              <button id="clearEntriesButton" class="secondary-button" type="button" disabled>Clear Entries</button>
+              <button id="clearWinnerLogButton" class="secondary-button" type="button" disabled>Clear Winner Log</button>
+              <button id="exportWinnerLogButton" class="secondary-button" type="button" disabled>Export Winner Log</button>
+              <button id="resetRaffleButton" class="danger-subtle-button" type="button">Full Reset</button>
+            </div>
+          </details>
+        </aside>
+      </section>
+
+      <section class="lower-grid">
+        <section class="panel participant-panel" aria-label="Participant summary">
+          <div class="section-heading">
+            <div>
+              <h2>Tickets by Participant</h2>
+            </div>
+            <input id="participantSearchInput" class="search-input" type="search" placeholder="Search participants" />
+          </div>
+          <p class="helper-text">
+            Counts are grouped for management only. The drawing still uses every individual ticket entry.
+          </p>
+          <div id="participantList" class="participant-list"></div>
+        </section>
+
+        <section class="panel winner-log-panel" aria-label="Winner log">
+          <div class="section-heading">
+            <div>
+              <h2>Winner Log</h2>
+            </div>
+          </div>
+          <ol id="winnerLogList" class="winner-log-list"></ol>
+        </section>
       </section>
     </main>
 
