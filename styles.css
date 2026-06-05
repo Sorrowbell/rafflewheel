@@ -87,7 +87,7 @@ button:disabled {
 .app-shell {
   width: min(94rem, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 1.5rem 0 2.5rem;
+  padding: 1.8rem 0 2.8rem;
 }
 
 .hero {
@@ -95,7 +95,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-bottom: 1.15rem;
+  margin-bottom: 1.25rem;
 }
 
 .hero-title {
@@ -113,15 +113,6 @@ button:disabled {
   box-shadow: 0 10px 28px rgba(29, 36, 51, 0.08);
 }
 
-.eyebrow {
-  margin: 0 0 0.35rem;
-  color: var(--brand);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
 h1,
 h2,
 p {
@@ -129,12 +120,22 @@ p {
 }
 
 h1 {
-  margin-bottom: 0.55rem;
+  max-width: 48rem;
+  margin-bottom: 0.45rem;
   font-family: "Poppins", var(--font-heading, sans-serif);
-  font-size: clamp(2.5rem, 7vw, 5.25rem);
+  font-size: clamp(2rem, 4.4vw, 3.7rem);
   font-weight: 900;
-  line-height: 0.92;
+  line-height: 1.04;
   letter-spacing: 0;
+}
+
+.hero-subtitle {
+  max-width: 56rem;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: clamp(0.9rem, 1.15vw, 1.02rem);
+  font-weight: 750;
+  line-height: 1.45;
 }
 
 h2 {
@@ -156,8 +157,12 @@ svg {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
+}
+
+.dashboard-stats {
+  margin-bottom: 1.35rem;
 }
 
 .stat-card,
@@ -170,7 +175,10 @@ svg {
 }
 
 .stat-card {
-  padding: 1rem 1.15rem;
+  padding: 1.05rem 1.2rem;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 242, 0.98), rgba(255, 255, 255, 0.96)),
+    #fff;
 }
 
 .stat-card span {
@@ -186,16 +194,17 @@ svg {
 
 .stat-card strong {
   display: block;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(2rem, 4.4vw, 2.85rem);
   line-height: 1;
 }
 
 .event-layout {
   display: grid;
-  grid-template-columns: minmax(27rem, 1fr) minmax(21rem, 0.95fr);
-  gap: 1.15rem;
-  align-items: stretch;
-  margin-bottom: 1.15rem;
+  grid-template-columns: minmax(28rem, 1.08fr) minmax(22rem, 0.82fr);
+  gap: 1.35rem;
+  align-items: start;
+  margin-bottom: 1.35rem;
 }
 
 .event-rail {
@@ -213,10 +222,13 @@ svg {
   display: grid;
   grid-template-rows: auto auto auto auto auto auto;
   min-height: auto;
+  border-color: rgba(201, 79, 95, 0.16);
+  box-shadow: 0 18px 46px rgba(29, 36, 51, 0.11);
 }
 
 .prize-field {
   display: grid;
+  margin-bottom: 0.25rem;
 }
 
 .section-heading {
@@ -246,6 +258,13 @@ svg {
 
 .helper-text {
   margin-bottom: 0;
+}
+
+.field-helper {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 .wheel-stage {
@@ -372,7 +391,7 @@ canvas {
 .ticket-entry-panel,
 .participant-panel,
 .host-controls-panel {
-  margin-top: 1.15rem;
+  margin-top: 1.35rem;
 }
 
 .ticket-form {
@@ -390,8 +409,6 @@ label,
 }
 
 .prize-label {
-  display: flex;
-  justify-content: space-between;
   margin: 0 0 0.45rem;
 }
 
@@ -461,13 +478,16 @@ input:focus {
 .host-controls-panel {
   padding: 0;
   overflow: hidden;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
 }
 
 .host-controls-panel summary {
   position: relative;
   display: grid;
   gap: 0.18rem;
-  padding: 1rem 1.2rem;
+  padding: 0.9rem 1.1rem;
   cursor: pointer;
   list-style: none;
 }
@@ -494,8 +514,8 @@ input:focus {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--ink);
-  font-size: 1.08rem;
+  color: #475467;
+  font-size: 1rem;
   font-weight: 900;
 }
 
@@ -745,6 +765,10 @@ input:focus {
     max-height: 5.5rem;
   }
 
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
   .event-layout {
     display: flex;
     flex-direction: column;
@@ -754,28 +778,24 @@ input:focus {
     display: contents;
   }
 
-  .stats-grid {
+  .wheel-card {
     order: 1;
   }
 
-  .wheel-card {
+  .winner-log-panel {
     order: 2;
   }
 
-  .winner-log-panel {
+  .ticket-entry-panel {
     order: 3;
   }
 
-  .ticket-entry-panel {
+  .participant-panel {
     order: 4;
   }
 
-  .participant-panel {
-    order: 5;
-  }
-
   .host-controls-panel {
-    order: 6;
+    order: 5;
   }
 
   .section-heading {

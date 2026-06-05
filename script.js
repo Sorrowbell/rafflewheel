@@ -589,7 +589,7 @@ function renderWinnerLog() {
   if (state.winners.length === 0) {
     const emptyItem = document.createElement("li");
     emptyItem.className = "empty-state log-empty";
-    emptyItem.textContent = "No winners drawn yet.";
+    emptyItem.textContent = "Winners will appear here after each spin.";
     winnerLogList.append(emptyItem);
     return;
   }
