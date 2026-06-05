@@ -1,18 +1,22 @@
 :root {
-  --ink: #1d2433;
-  --muted: #667085;
-  --soft: #f6f2ea;
+  --ink: #07184d;
+  --navy: #07184d;
+  --muted: #536179;
+  --soft: #fff8e7;
   --surface: #ffffff;
   --surface-warm: #fffaf1;
-  --line: #e4dfd5;
-  --line-strong: #cfc7b7;
-  --brand: #2d7c7f;
-  --brand-dark: #1f5f62;
-  --accent: #c94f5f;
-  --accent-dark: #9f3343;
-  --gold: #efb23c;
-  --success: #287d55;
-  --shadow: 0 18px 52px rgba(29, 36, 51, 0.14);
+  --line: #d9e4e7;
+  --line-strong: #a8c5cb;
+  --brand: #137d8d;
+  --brand-dark: #075463;
+  --accent: #ec4b1a;
+  --accent-dark: #b93412;
+  --gold: #f7c800;
+  --success: #3d8f35;
+  --green: #3f8d35;
+  --blue: #1557c8;
+  --purple: #6a329f;
+  --shadow: 0 22px 52px rgba(7, 24, 77, 0.16);
 }
 
 * {
@@ -24,19 +28,33 @@ html {
 }
 
 body {
+  position: relative;
   min-height: 100vh;
   margin: 0;
   color: var(--ink);
   font-family:
     "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background:
-    radial-gradient(circle at top left, rgba(239, 178, 60, 0.24), transparent 28rem),
-    radial-gradient(circle at bottom right, rgba(45, 124, 127, 0.18), transparent 30rem),
-    linear-gradient(180deg, #fbf8f1 0%, #f3efe6 100%);
+    repeating-linear-gradient(135deg, rgba(247, 200, 0, 0.12) 0 0.35rem, transparent 0.35rem 4.8rem),
+    linear-gradient(180deg, #fffdf5 0%, #fff3d5 46%, #f7fbfb 100%);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, transparent 0 calc(100% - 0.4rem), rgba(19, 125, 141, 0.2) calc(100% - 0.4rem) 100%),
+    radial-gradient(circle, rgba(236, 75, 26, 0.18) 0 0.12rem, transparent 0.13rem) 1.3rem 1.7rem / 3.8rem 3.8rem,
+    radial-gradient(circle, rgba(21, 87, 200, 0.12) 0 0.1rem, transparent 0.11rem) 0.4rem 0.6rem / 4.6rem 4.6rem;
+  opacity: 0.86;
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -85,34 +103,78 @@ button:disabled {
 }
 
 .app-shell {
-  width: min(94rem, calc(100% - 2rem));
+  width: min(98rem, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 1.8rem 0 2.8rem;
+  padding: 1.2rem 0 2.8rem;
 }
 
 .hero {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr) minmax(12rem, 18rem);
   align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1.25rem;
+  gap: 1.25rem;
+  margin-bottom: 1.1rem;
+  border: 3px solid var(--navy);
+  border-radius: 10px;
+  padding: 1rem;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #ffffff 0 17%, transparent 17%),
+    linear-gradient(135deg, #fffdf7 0%, #ffffff 58%, #fff3d5 100%);
+  box-shadow: var(--shadow);
+}
+
+.hero::before,
+.hero::after {
+  position: absolute;
+  z-index: 0;
+  content: "";
+}
+
+.hero::before {
+  right: 1rem;
+  bottom: -2.1rem;
+  width: 8rem;
+  height: 8rem;
+  border: 1rem solid rgba(236, 75, 26, 0.92);
+  border-left-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.hero::after {
+  left: 17.2rem;
+  top: 0.7rem;
+  width: 8rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow:
+    1.2rem -0.9rem 0 -0.05rem var(--gold),
+    -1.1rem 0.9rem 0 -0.08rem var(--gold);
+  transform: rotate(22deg);
 }
 
 .hero-title {
+  position: relative;
+  z-index: 1;
   flex: 1 1 auto;
   min-width: 0;
+  text-align: center;
 }
 
 .hero-logo {
-  flex: 0 1 20rem;
-  width: min(24rem, 34vw);
-  max-height: 6rem;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-height: 8.4rem;
   object-fit: contain;
-  border: 1px solid rgba(228, 223, 213, 0.95);
-  border-radius: 8px;
-  padding: 0.8rem 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 28px rgba(29, 36, 51, 0.08);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 h1,
@@ -124,21 +186,93 @@ p {
 h1 {
   max-width: none;
   margin-bottom: 0.45rem;
+  color: var(--ink);
   font-family: "Poppins", var(--font-heading, sans-serif);
-  font-size: clamp(1.9rem, 3.8vw, 3.25rem);
+  font-size: clamp(2.5rem, 5.2vw, 5.15rem);
   font-weight: 900;
-  line-height: 1.04;
+  line-height: 0.9;
   letter-spacing: 0;
-  white-space: nowrap;
+  text-transform: uppercase;
+  white-space: normal;
+  text-shadow: 0.07em 0.07em 0 rgba(19, 125, 141, 0.12);
+}
+
+.event-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  margin: 0 auto 0.35rem;
+  border-radius: 2px;
+  padding: 0 2rem;
+  color: #fff;
+  background: var(--brand);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(1.1rem, 2vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0.55rem 0.55rem 0 rgba(7, 24, 77, 0.13);
+}
+
+.impact-ribbon {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 0.65rem;
+  padding: 0.35rem 1.25rem;
+  color: #fff;
+  background: var(--accent);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(0.9rem, 1.5vw, 1.35rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .hero-subtitle {
-  max-width: 56rem;
+  max-width: 52rem;
   margin-bottom: 0;
-  color: var(--muted);
+  color: var(--navy);
   font-size: clamp(0.9rem, 1.15vw, 1.02rem);
-  font-weight: 750;
+  font-weight: 900;
   line-height: 1.45;
+}
+
+.basket-badge {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.1rem;
+  align-content: center;
+  min-height: 9.6rem;
+  border-radius: 0 0 0 2rem;
+  padding: 1rem;
+  color: #fff;
+  background: var(--navy);
+  text-align: center;
+  box-shadow: inset 0 -0.35rem 0 var(--gold);
+}
+
+.basket-badge span {
+  color: var(--gold);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.basket-badge strong {
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(1rem, 1.8vw, 1.5rem);
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.basket-badge em {
+  color: var(--gold);
+  font-style: normal;
+  font-weight: 900;
 }
 
 h2 {
@@ -150,6 +284,15 @@ h2 {
   font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.15;
+}
+
+h2 svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  padding: 0.35rem;
+  color: #fff;
+  background: var(--brand);
 }
 
 svg {
@@ -171,17 +314,29 @@ svg {
 .stat-card,
 .panel,
 .wheel-card {
-  border: 1px solid rgba(228, 223, 213, 0.9);
+  border: 2px solid rgba(19, 125, 141, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 10px 34px rgba(29, 36, 51, 0.08);
+  box-shadow: 0 12px 32px rgba(7, 24, 77, 0.1);
 }
 
 .stat-card {
+  position: relative;
   padding: 1.05rem 1.2rem;
+  overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(255, 250, 242, 0.98), rgba(255, 255, 255, 0.96)),
+    linear-gradient(135deg, rgba(255, 250, 242, 0.98), rgba(255, 255, 255, 0.98)),
     #fff;
+  border-top: 0;
+  border-left: 0.7rem solid var(--brand);
+}
+
+.stat-participants {
+  border-left-color: var(--green);
+}
+
+.stat-winners {
+  border-left-color: var(--blue);
 }
 
 .stat-card span {
@@ -189,7 +344,7 @@ svg {
   align-items: center;
   gap: 0.35rem;
   margin-bottom: 0.25rem;
-  color: var(--muted);
+  color: var(--navy);
   font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -221,17 +376,75 @@ svg {
   padding: 1.2rem;
 }
 
+.winner-log-panel,
+.ticket-entry-panel,
+.participant-panel {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+}
+
+.winner-log-panel h2 svg {
+  color: var(--navy);
+  background: var(--gold);
+}
+
+.ticket-entry-panel h2 svg {
+  background: var(--accent);
+}
+
+.participant-panel h2 svg {
+  background: var(--green);
+}
+
 .wheel-card {
+  position: relative;
   display: grid;
   grid-template-rows: auto auto auto auto auto auto;
   min-height: auto;
-  border-color: rgba(201, 79, 95, 0.16);
-  box-shadow: 0 18px 46px rgba(29, 36, 51, 0.11);
+  border-color: rgba(236, 75, 26, 0.34);
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fffaf0 100%);
+  box-shadow: 0 18px 46px rgba(7, 24, 77, 0.14);
+}
+
+.wheel-card.is-celebrating {
+  animation: stage-celebration 1.35s ease-in-out 2;
+}
+
+.wheel-card.is-celebrating .wheel-wrap::before {
+  animation: wheel-victory-glow 1.2s ease-in-out 2;
+}
+
+.wheel-card.is-celebrating .winner-display {
+  animation: winner-panel-pop 1.2s ease-in-out 2;
+}
+
+.wheel-card::before,
+.winner-log-panel::before,
+.ticket-entry-panel::before,
+.participant-panel::before {
+  display: block;
+  height: 0.42rem;
+  margin: -1.2rem -1.2rem 1rem;
+  border-radius: 8px 8px 0 0;
+  content: "";
+  background: linear-gradient(90deg, var(--accent), var(--gold), var(--brand), var(--blue));
+}
+
+.wheel-card .section-heading,
+.winner-log-panel .section-heading {
+  border-bottom: 2px dashed rgba(19, 125, 141, 0.34);
+  padding-bottom: 0.85rem;
 }
 
 .prize-field {
   display: grid;
   margin-bottom: 0.25rem;
+}
+
+.entry-prize-field {
+  max-width: 34rem;
+  margin-bottom: 1rem;
 }
 
 .section-heading {
@@ -255,7 +468,12 @@ svg {
 }
 
 .odds-text {
-  margin: 0.25rem 0 0;
+  width: fit-content;
+  margin: 0.45rem 0 0;
+  border-radius: 999px;
+  padding: 0.22rem 0.7rem;
+  color: var(--brand-dark);
+  background: #e8f7f7;
   font-weight: 800;
 }
 
@@ -283,6 +501,17 @@ svg {
   aspect-ratio: 1;
 }
 
+.wheel-wrap::before {
+  position: absolute;
+  inset: -0.72rem;
+  border: 0.3rem solid #fff;
+  border-radius: 50%;
+  content: "";
+  box-shadow:
+    0 0 0 0.45rem rgba(7, 24, 77, 0.08),
+    0 1.4rem 2.4rem rgba(7, 24, 77, 0.12);
+}
+
 canvas {
   display: block;
   width: 100%;
@@ -299,7 +528,7 @@ canvas {
   height: 0;
   border-top: 1rem solid transparent;
   border-bottom: 1rem solid transparent;
-  border-right: 2.25rem solid #243044;
+  border-right: 2.25rem solid var(--navy);
   filter: drop-shadow(0 4px 4px rgba(29, 36, 51, 0.24));
   transform: translateY(-50%);
 }
@@ -309,11 +538,65 @@ canvas {
   gap: 0.2rem;
   min-height: 4.6rem;
   margin-top: 0.75rem;
-  border: 1px solid #ead8a7;
+  border: 2px solid var(--gold);
   border-radius: 8px;
   padding: 0.9rem 1rem;
-  background: linear-gradient(135deg, #fff7dd 0%, #fffdf8 100%);
+  background: linear-gradient(135deg, #fff4bd 0%, #fffdf8 100%);
   text-align: center;
+  box-shadow: inset 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+}
+
+@keyframes stage-celebration {
+  0%,
+  100% {
+    box-shadow: 0 18px 46px rgba(7, 24, 77, 0.14);
+    transform: translateY(0);
+  }
+
+  35% {
+    box-shadow:
+      0 0 0 0.45rem rgba(247, 200, 0, 0.45),
+      0 0 0 0.85rem rgba(236, 75, 26, 0.24),
+      0 24px 58px rgba(7, 24, 77, 0.22);
+    transform: translateY(-0.18rem);
+  }
+
+  70% {
+    box-shadow:
+      0 0 0 0.32rem rgba(19, 125, 141, 0.35),
+      0 0 0 0.68rem rgba(247, 200, 0, 0.22),
+      0 18px 46px rgba(7, 24, 77, 0.16);
+  }
+}
+
+@keyframes wheel-victory-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0.45rem rgba(7, 24, 77, 0.08),
+      0 1.4rem 2.4rem rgba(7, 24, 77, 0.12);
+  }
+
+  45% {
+    box-shadow:
+      0 0 0 0.45rem rgba(255, 255, 255, 0.95),
+      0 0 0 0.85rem rgba(247, 200, 0, 0.65),
+      0 0 2.2rem 0.65rem rgba(236, 75, 26, 0.36),
+      0 1.4rem 2.4rem rgba(7, 24, 77, 0.18);
+  }
+}
+
+@keyframes winner-panel-pop {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  38% {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #fff1a7 0%, #fffdf8 100%);
+    transform: scale(1.035);
+  }
 }
 
 .winner-display span {
@@ -356,14 +639,23 @@ canvas {
   gap: 0.5rem;
 }
 
+.selected-prize-slot {
+  display: grid;
+  min-height: 2.85rem;
+  place-items: center;
+  margin: 0.15rem 0 0.35rem;
+}
+
 .spin-button {
   width: min(100%, 20rem);
   min-height: 3rem;
   margin: 0.75rem auto 0.35rem;
   color: #fff;
-  background: var(--accent);
+  background:
+    linear-gradient(180deg, #ff6837, var(--accent));
   font-size: 1.08rem;
-  box-shadow: 0 13px 25px rgba(201, 79, 95, 0.25);
+  text-transform: uppercase;
+  box-shadow: 0 13px 25px rgba(236, 75, 26, 0.28);
 }
 
 .sound-toggle {
@@ -420,7 +712,8 @@ label,
   font-size: 0.78rem;
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 2.85rem;
   border: 1px solid var(--line-strong);
@@ -430,9 +723,58 @@ input {
   background: #fff;
 }
 
-input:focus {
+select {
+  appearance: none;
+  padding-right: 2.4rem;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--brand) 50%) calc(100% - 1.15rem) 1.25rem / 0.42rem 0.42rem
+      no-repeat,
+    linear-gradient(135deg, var(--brand) 50%, transparent 50%) calc(100% - 0.88rem) 1.25rem / 0.42rem 0.42rem
+      no-repeat,
+    #fff;
+}
+
+input:focus,
+select:focus {
   border-color: var(--brand);
   outline: 3px solid rgba(45, 124, 127, 0.16);
+}
+
+.prize-preview-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: inset 0 0 0 2px rgba(7, 24, 77, 0.08);
+}
+
+.prize-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.1rem;
+  margin-top: 0.65rem;
+  border: 1px solid rgba(19, 120, 135, 0.24);
+  border-radius: 999px;
+  padding: 0.28rem 0.72rem 0.28rem 0.45rem;
+  color: var(--brand-dark);
+  background: #eef9f8;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.prize-preview.is-empty {
+  display: none;
+}
+
+.prize-preview-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+  font-size: 1.05rem;
 }
 
 .ticket-form button,
@@ -440,7 +782,8 @@ input:focus {
   min-height: 2.85rem;
   padding: 0 0.9rem;
   color: #fff;
-  background: var(--brand);
+  background:
+    linear-gradient(180deg, #188fa1, var(--brand));
 }
 
 .ticket-form button:hover,
@@ -663,7 +1006,7 @@ input:focus {
   height: 2.1rem;
   border-radius: 50%;
   color: #fff;
-  background: var(--brand);
+  background: var(--accent);
   font-weight: 900;
 }
 
@@ -706,30 +1049,59 @@ input:focus {
 
 .winner-alert {
   display: grid;
-  gap: 0.35rem;
-  padding: 0.25rem 0 0.4rem;
+  gap: 0.55rem;
+  padding: 0.3rem 0 0.65rem;
+  text-align: center;
+}
+
+.winner-alert-kicker {
+  width: fit-content;
+  margin: 0 auto;
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  color: #fff;
+  background: var(--brand);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .winner-alert strong {
   color: var(--ink);
   font-family: "Poppins", var(--font-heading, sans-serif);
-  font-size: clamp(2rem, 6vw, 3.2rem);
-  line-height: 1.05;
+  font-size: clamp(2.7rem, 9vw, 5.3rem);
+  line-height: 0.94;
+  text-shadow: 0.08em 0.08em 0 rgba(247, 200, 0, 0.32);
 }
 
-.winner-alert span {
+.winner-alert em {
+  width: fit-content;
+  margin: 0 auto;
+  border: 2px solid rgba(19, 125, 141, 0.22);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
   color: var(--brand-dark);
+  background: #eef9f8;
+  font-style: normal;
   font-weight: 850;
 }
 
 .raffle-alert-popup {
-  border: 1px solid #ead8a7;
+  border: 4px solid var(--gold);
   border-radius: 8px;
+  box-shadow:
+    0 0 0 0.45rem rgba(236, 75, 26, 0.18),
+    0 2rem 5rem rgba(7, 24, 77, 0.24);
 }
 
 .raffle-alert-title {
+  color: var(--accent);
   font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(2.2rem, 7vw, 4rem);
   letter-spacing: 0;
+  text-shadow: 0.06em 0.06em 0 rgba(7, 24, 77, 0.1);
 }
 
 @media (max-width: 1040px) {
@@ -758,9 +1130,15 @@ input:focus {
   }
 
   .hero {
+    display: flex;
     align-items: flex-start;
     flex-direction: column;
     gap: 0.85rem;
+  }
+
+  .hero::before,
+  .hero::after {
+    display: none;
   }
 
   h1 {
@@ -770,6 +1148,21 @@ input:focus {
   .hero-logo {
     width: min(100%, 22rem);
     max-height: 5.5rem;
+  }
+
+  .hero-title {
+    text-align: left;
+  }
+
+  .event-kicker,
+  .impact-ribbon {
+    margin-left: 0;
+  }
+
+  .basket-badge {
+    width: 100%;
+    min-height: auto;
+    border-radius: 8px;
   }
 
   .stats-grid {
@@ -863,7 +1256,7 @@ input:focus {
 
 @media (max-width: 460px) {
   h1 {
-    font-size: 2.65rem;
+    font-size: 2.18rem;
   }
 
   .wheel-wrap {

@@ -52,9 +52,9 @@ The participant list is searchable and sorted alphabetically.
 
 ## Prize Tracking
 
-The **Current Prize** field is optional.
+The **Current Prize** selector includes the event basket list and an **Add prize** option for one-off prizes.
 
-If a prize is entered before spinning, that prize is saved with the winner log entry:
+If a prize is selected before spinning, that prize is saved with the winner log entry:
 
 ```text
 1. Sarah — Wine Basket
@@ -62,7 +62,9 @@ If a prize is entered before spinning, that prize is saved with the winner log e
 3. Sarah
 ```
 
-If no prize is entered, the winner is still logged without a prize.
+After each completed spin, the selected prize resets so the host can choose the next prize deliberately.
+
+Custom added prizes are stored in `localStorage` until the raffle is fully reset.
 
 ## Winner Log
 

@@ -1,6 +1,21 @@
 const STORAGE_KEY = "raffleWheelFundraiserState";
 const LEGACY_NAMES_KEY = "raffleWheelNames";
 const SPIN_TIME = 5000;
+const ADD_PRIZE_VALUE = "__add_custom_prize__";
+const celebrationColors = ["#07184d", "#137d8d", "#ec4b1a", "#f7c800", "#3f8d35", "#1557c8", "#ffffff"];
+
+const defaultPrizes = [
+  { name: "Pie in the Face", icon: "🥧" },
+  { name: "Wine Tasting", icon: "🍷" },
+  { name: "4th of July Basket", icon: "🎆" },
+  { name: "McMenamins Signature Pint & Passport Package", icon: "🌞" },
+  { name: "Summer Fun Toy Basket", icon: "🏖️" },
+  { name: "Nike Basket", icon: "✓" },
+  { name: "The Cozy Reader", icon: "📚" },
+  { name: "Mom and Baby Basket", icon: "🍼" },
+  { name: "Thanks, A Latte Basket", icon: "☕" },
+  { name: "Pet Lover Basket", icon: "🐾" }
+];
 
 const colors = [
   "#d94b5d",
@@ -80,15 +95,18 @@ const colors = [
 const state = {
   entries: [],
   winners: [],
-  currentPrize: ""
+  currentPrize: "",
+  customPrizes: []
 };
 
 const canvas = document.querySelector("#wheelCanvas");
 const ctx = canvas.getContext("2d");
+const wheelCard = document.querySelector(".wheel-card");
 const ticketForm = document.querySelector("#ticketForm");
 const nameInput = document.querySelector("#nameInput");
 const ticketQuantityInput = document.querySelector("#ticketQuantityInput");
 const prizeInput = document.querySelector("#prizeInput");
+const prizePreview = document.querySelector("#prizePreview");
 const soundToggle = document.querySelector("#soundToggle");
 const participantSearchInput = document.querySelector("#participantSearchInput");
 const participantList = document.querySelector("#participantList");
@@ -122,6 +140,47 @@ function normalizeName(name) {
 
 function getNameKey(name) {
   return normalizeName(name).toLowerCase();
+}
+
+function getPrizeKey(prizeName) {
+  return normalizeName(prizeName).toLowerCase();
+}
+
+function normalizeCustomPrizes(prizes) {
+  const seenPrizes = new Set();
+
+  return prizes
+    .map((prize) => normalizeName(String(prize)))
+    .filter((prize) => {
+      const prizeKey = getPrizeKey(prize);
+
+      if (!prizeKey || seenPrizes.has(prizeKey)) {
+        return false;
+      }
+
+      seenPrizes.add(prizeKey);
+      return true;
+    });
+}
+
+function getAllPrizes() {
+  const customPrizeOptions = state.customPrizes.map((name) => ({
+    name,
+    icon: "🎁",
+    custom: true
+  }));
+
+  return [...defaultPrizes, ...customPrizeOptions];
+}
+
+function getPrizeByName(prizeName) {
+  const prizeKey = getPrizeKey(prizeName);
+
+  return getAllPrizes().find((prize) => getPrizeKey(prize.name) === prizeKey);
+}
+
+function prizeExists(prizeName) {
+  return Boolean(getPrizeByName(prizeName));
 }
 
 function shuffleColors(colorList) {
@@ -201,12 +260,21 @@ function loadState() {
       state.entries = savedState.entries.map((entry) => normalizeName(String(entry))).filter(Boolean);
       state.winners = Array.isArray(savedState.winners) ? savedState.winners : [];
       state.currentPrize = typeof savedState.currentPrize === "string" ? savedState.currentPrize : "";
+      state.customPrizes = Array.isArray(savedState.customPrizes)
+        ? normalizeCustomPrizes(savedState.customPrizes)
+        : [];
+
+      if (state.currentPrize && !prizeExists(state.currentPrize)) {
+        state.customPrizes = normalizeCustomPrizes([...state.customPrizes, state.currentPrize]);
+      }
+
       return;
     }
   } catch (error) {
     state.entries = [];
     state.winners = [];
     state.currentPrize = "";
+    state.customPrizes = [];
   }
 
   migrateLegacyNames();
@@ -324,6 +392,136 @@ function renderDashboard() {
   } else {
     oddsText.textContent = `${state.entries.length} ticket ${state.entries.length === 1 ? "entry" : "entries"} active`;
   }
+}
+
+function renderPrizeOptions() {
+  const selectedPrize = state.currentPrize;
+  const placeholderOption = document.createElement("option");
+  const addPrizeOption = document.createElement("option");
+
+  prizeInput.innerHTML = "";
+
+  placeholderOption.value = "";
+  placeholderOption.textContent = "Select a prize";
+  prizeInput.append(placeholderOption);
+
+  defaultPrizes.forEach((prize) => {
+    prizeInput.append(createPrizeOption(prize));
+  });
+
+  if (state.customPrizes.length > 0) {
+    const customGroup = document.createElement("optgroup");
+
+    customGroup.label = "Added prizes";
+    state.customPrizes.forEach((name) => {
+      customGroup.append(createPrizeOption({ name, icon: "🎁" }));
+    });
+    prizeInput.append(customGroup);
+  }
+
+  addPrizeOption.value = ADD_PRIZE_VALUE;
+  addPrizeOption.textContent = "+ Add prize...";
+  prizeInput.append(addPrizeOption);
+
+  prizeInput.value = selectedPrize && prizeExists(selectedPrize) ? selectedPrize : "";
+  renderPrizePreview();
+}
+
+function createPrizeOption(prize) {
+  const option = document.createElement("option");
+
+  option.value = prize.name;
+  option.textContent = `${prize.icon} ${prize.name}`;
+  return option;
+}
+
+function renderPrizePreview() {
+  const selectedPrize = getPrizeByName(state.currentPrize);
+
+  prizePreview.innerHTML = "";
+
+  if (!selectedPrize) {
+    prizePreview.classList.add("is-empty");
+    prizePreview.textContent = "";
+    return;
+  }
+
+  const name = document.createElement("strong");
+  const icon = document.createElement("span");
+
+  prizePreview.classList.remove("is-empty");
+  icon.className = "prize-preview-icon";
+  icon.textContent = selectedPrize.icon;
+  name.textContent = selectedPrize.name;
+  prizePreview.append(icon, name);
+}
+
+async function promptForCustomPrize(previousPrize) {
+  let prizeName = "";
+
+  if (window.Swal) {
+    const result = await window.Swal.fire({
+      title: "Add prize",
+      input: "text",
+      inputLabel: "Prize name",
+      inputPlaceholder: "Community Gift Basket",
+      showCancelButton: true,
+      confirmButtonText: "Add Prize",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#0f7280",
+      cancelButtonColor: "#667085",
+      background: "#fffaf1",
+      color: "#07184d",
+      inputValidator: (value) => {
+        const normalizedPrize = normalizeName(value || "");
+
+        if (!normalizedPrize) {
+          return "Enter a prize name.";
+        }
+
+        if (prizeExists(normalizedPrize)) {
+          return "That prize is already in the list.";
+        }
+
+        return null;
+      }
+    });
+
+    if (!result.isConfirmed) {
+      state.currentPrize = previousPrize;
+      renderPrizeOptions();
+      return;
+    }
+
+    prizeName = normalizeName(result.value || "");
+  } else {
+    prizeName = normalizeName(prompt("Prize name") || "");
+
+    if (!prizeName || prizeExists(prizeName)) {
+      state.currentPrize = previousPrize;
+      renderPrizeOptions();
+      return;
+    }
+  }
+
+  state.customPrizes = normalizeCustomPrizes([...state.customPrizes, prizeName]);
+  state.currentPrize = prizeName;
+  saveState();
+  renderPrizeOptions();
+}
+
+function handlePrizeChange() {
+  const selectedPrize = prizeInput.value;
+  const previousPrize = state.currentPrize;
+
+  if (selectedPrize === ADD_PRIZE_VALUE) {
+    promptForCustomPrize(previousPrize);
+    return;
+  }
+
+  state.currentPrize = selectedPrize;
+  saveState();
+  renderPrizePreview();
 }
 
 function renderParticipantSummary() {
@@ -532,6 +730,9 @@ function finishSpin(winningTicket) {
   winnerNameText.textContent = winningTicket.name;
   winnerPrizeText.textContent = prizeName ? prizeName : "";
   logWinner(winningTicket.name, prizeName);
+  state.currentPrize = "";
+  prizeInput.value = "";
+  saveState();
   celebrateWinner();
   announceWinner(winningTicket.name, prizeName);
 
@@ -554,18 +755,19 @@ function announceWinner(winnerName, prizeName) {
   }
 
   window.Swal.fire({
-    title: "Winner!",
+    title: "WINNER!",
     html: `
       <div class="winner-alert">
+        <span class="winner-alert-kicker">Congratulations</span>
         <strong>${escapeHTML(winnerName)}</strong>
-        ${prizeName ? `<span>${escapeHTML(prizeName)}</span>` : ""}
+        ${prizeName ? `<em>${escapeHTML(prizeName)}</em>` : ""}
       </div>
     `,
-    icon: "success",
+    width: "min(44rem, calc(100% - 2rem))",
     confirmButtonText: "Continue",
-    confirmButtonColor: "#2d7c7f",
-    background: "#fffaf1",
-    color: "#1d2433",
+    confirmButtonColor: "#ec4b1a",
+    background: "#fff8df",
+    color: "#07184d",
     customClass: {
       popup: "raffle-alert-popup",
       title: "raffle-alert-title"
@@ -715,6 +917,7 @@ async function resetRaffle() {
   state.entries = [];
   state.winners = [];
   state.currentPrize = "";
+  state.customPrizes = [];
   highlightedWinnerKey = "";
   prizeInput.value = "";
   resetWinnerDisplay();
@@ -779,23 +982,40 @@ function playWinnerSound() {
     return;
   }
 
-  const notes = [523.25, 659.25, 783.99, 1046.5];
+  const notes = [392, 523.25, 659.25, 783.99, 1046.5, 1318.51];
 
   notes.forEach((frequency, index) => {
     const oscillator = context.createOscillator();
     const gain = context.createGain();
-    const start = context.currentTime + index * 0.085;
+    const start = context.currentTime + index * 0.075;
 
-    oscillator.type = "sine";
+    oscillator.type = index % 2 === 0 ? "triangle" : "sine";
     oscillator.frequency.setValueAtTime(frequency, start);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.09, start + 0.018);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.26);
+    gain.gain.exponentialRampToValueAtTime(0.11, start + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.34);
 
     oscillator.connect(gain);
     gain.connect(context.destination);
     oscillator.start(start);
-    oscillator.stop(start + 0.28);
+    oscillator.stop(start + 0.36);
+  });
+
+  [196, 246.94, 392].forEach((frequency) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const start = context.currentTime + 0.02;
+
+    oscillator.type = "sawtooth";
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.035, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.62);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + 0.64);
   });
 }
 
@@ -825,31 +1045,81 @@ function stopTicking() {
 }
 
 function celebrateWinner() {
+  wheelCard.classList.remove("is-celebrating");
+  window.requestAnimationFrame(() => {
+    wheelCard.classList.add("is-celebrating");
+  });
+  window.setTimeout(() => {
+    wheelCard.classList.remove("is-celebrating");
+  }, 2600);
+
   if (window.confetti) {
-    window.confetti({
-      particleCount: 120,
-      spread: 72,
+    const fire = (options) => {
+      window.confetti({
+        colors: celebrationColors,
+        disableForReducedMotion: true,
+        ...options
+      });
+    };
+
+    fire({
+      particleCount: 220,
+      spread: 105,
+      startVelocity: 52,
       origin: { y: 0.58 },
-      scalar: 0.9,
-      ticks: 220
+      scalar: 1,
+      ticks: 280
+    });
+
+    fire({
+      particleCount: 90,
+      angle: 60,
+      spread: 70,
+      startVelocity: 58,
+      origin: { x: 0.04, y: 0.78 },
+      scalar: 0.95,
+      ticks: 260
+    });
+
+    fire({
+      particleCount: 90,
+      angle: 120,
+      spread: 70,
+      startVelocity: 58,
+      origin: { x: 0.96, y: 0.78 },
+      scalar: 0.95,
+      ticks: 260
     });
 
     window.setTimeout(() => {
-      window.confetti({
-        particleCount: 55,
+      fire({
+        particleCount: 120,
         angle: 60,
-        spread: 55,
-        origin: { x: 0.15, y: 0.72 },
-        scalar: 0.78
+        spread: 62,
+        startVelocity: 44,
+        origin: { x: 0.18, y: 0.92 },
+        scalar: 0.82
       });
-      window.confetti({
-        particleCount: 55,
+      fire({
+        particleCount: 120,
         angle: 120,
-        spread: 55,
-        origin: { x: 0.85, y: 0.72 },
-        scalar: 0.78
+        spread: 62,
+        startVelocity: 44,
+        origin: { x: 0.82, y: 0.92 },
+        scalar: 0.82
       });
-    }, 160);
+    }, 260);
+
+    window.setTimeout(() => {
+      fire({
+        particleCount: 90,
+        spread: 140,
+        startVelocity: 34,
+        origin: { y: 0.36 },
+        scalar: 0.72,
+        ticks: 220
+      });
+    }, 640);
 
     return;
   }
@@ -887,7 +1157,7 @@ function escapeHTML(value) {
 }
 
 function renderApp() {
-  state.currentPrize = prizeInput.value;
+  renderPrizeOptions();
   saveState();
   renderDashboard();
   renderParticipantSummary();
@@ -898,10 +1168,7 @@ function renderApp() {
 
 ticketForm.addEventListener("submit", addTickets);
 participantSearchInput.addEventListener("input", renderParticipantSummary);
-prizeInput.addEventListener("input", () => {
-  state.currentPrize = prizeInput.value;
-  saveState();
-});
+prizeInput.addEventListener("change", handlePrizeChange);
 spinButton.addEventListener("click", spinWheel);
 clearEntriesButton.addEventListener("click", clearAllEntries);
 clearWinnerLogButton.addEventListener("click", clearWinnerLog);
@@ -909,5 +1176,4 @@ exportWinnerLogButton.addEventListener("click", exportWinnerLogCSV);
 resetRaffleButton.addEventListener("click", resetRaffle);
 
 loadState();
-prizeInput.value = state.currentPrize;
 renderApp();

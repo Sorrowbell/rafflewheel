@@ -17,28 +17,34 @@
     <div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
 
     <main class="app-shell">
-      <header class="hero">
-        <div class="hero-title">
-          <h1>First Tech CU4Kids Raffle</h1>
-          <p class="hero-subtitle">Made possible by the generous contributions of CL Operations and SAM team members</p>
-        </div>
+      <header class="hero poster-hero">
         <img
           class="hero-logo"
           src="assets/cu4kids-logo.png"
           alt="Credit Unions for Kids benefiting Children's Miracle Network Hospitals"
         />
+        <div class="hero-title">
+          <p class="event-kicker">3rd Annual</p>
+          <h1>First Tech CU4Kids Raffle</h1>
+          <p class="impact-ribbon">Have fun. Support kids. Make an impact.</p>
+          <p class="hero-subtitle">Made possible by the generous contributions of CL Operations and SAM team members</p>
+        </div>
+        <div class="basket-badge" aria-label="10 amazing baskets">
+          <span>10</span>
+          <strong>Amazing Baskets!</strong>
+        </div>
       </header>
 
       <section class="stats-grid dashboard-stats" aria-label="Raffle statistics">
-        <article class="stat-card">
+        <article class="stat-card stat-tickets">
           <span><i data-lucide="ticket"></i>Total Tickets</span>
           <strong id="totalTicketsText">0</strong>
         </article>
-        <article class="stat-card">
-          <span><i data-lucide="users"></i>Unique Participants</span>
+        <article class="stat-card stat-participants">
+          <span><i data-lucide="users"></i>Total Participants</span>
           <strong id="uniqueParticipantsText">0</strong>
         </article>
-        <article class="stat-card">
+        <article class="stat-card stat-winners">
           <span><i data-lucide="trophy"></i>Winners Drawn</span>
           <strong id="winnersDrawnText">0</strong>
         </article>
@@ -53,9 +59,8 @@
             </div>
           </div>
 
-          <div class="prize-field">
-            <label for="prizeInput" class="prize-label">Current Prize</label>
-            <input id="prizeInput" type="text" maxlength="80" autocomplete="off" placeholder="Wine Basket" />
+          <div class="selected-prize-slot" aria-live="polite">
+            <div id="prizePreview" class="prize-preview" aria-live="polite"></div>
           </div>
 
           <div class="stage-actions">
@@ -102,6 +107,13 @@
             <h2><i data-lucide="ticket-plus"></i>Add Entries</h2>
             <p class="helper-text">Each ticket is stored as one raffle entry.</p>
           </div>
+        </div>
+
+        <div class="prize-field entry-prize-field">
+          <label for="prizeInput" class="prize-label">Current Prize</label>
+          <select id="prizeInput">
+            <option value="">Select a prize</option>
+          </select>
         </div>
 
         <form id="ticketForm" class="ticket-form">
