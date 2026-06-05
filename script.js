@@ -1,6 +1,6 @@
 const STORAGE_KEY = "raffleWheelFundraiserState";
 const LEGACY_NAMES_KEY = "raffleWheelNames";
-const SPIN_TIME = 4300;
+const SPIN_TIME = 5000;
 
 const colors = [
   "#d94b5d",
@@ -89,6 +89,7 @@ const ticketForm = document.querySelector("#ticketForm");
 const nameInput = document.querySelector("#nameInput");
 const ticketQuantityInput = document.querySelector("#ticketQuantityInput");
 const prizeInput = document.querySelector("#prizeInput");
+const soundToggle = document.querySelector("#soundToggle");
 const participantSearchInput = document.querySelector("#participantSearchInput");
 const participantList = document.querySelector("#participantList");
 const winnerLogList = document.querySelector("#winnerLogList");
@@ -166,6 +167,22 @@ function getColorForName(name) {
 function showMessage(message, type = "error") {
   messageText.textContent = message;
   messageText.dataset.type = type;
+}
+
+function resetWinnerDisplay() {
+  winnerNameText.textContent = "No winner yet";
+  winnerPrizeText.textContent = "";
+}
+
+function renderIcons() {
+  if (window.lucide) {
+    window.lucide.createIcons({
+      attrs: {
+        "stroke-width": 2.2,
+        "aria-hidden": "true"
+      }
+    });
+  }
 }
 
 function saveState() {
@@ -351,7 +368,7 @@ function renderParticipantSummary() {
 
     controls.className = "participant-actions";
     addButton.type = "button";
-    addButton.textContent = "+1";
+    addButton.innerHTML = '<i data-lucide="plus"></i><span>+1</span>';
     addButton.setAttribute("aria-label", `Add one ticket for ${participant.name}`);
     addButton.addEventListener("click", () => {
       state.entries.push(participant.name);
@@ -361,12 +378,12 @@ function renderParticipantSummary() {
     });
 
     subtractButton.type = "button";
-    subtractButton.textContent = "-1";
+    subtractButton.innerHTML = '<i data-lucide="minus"></i><span>-1</span>';
     subtractButton.setAttribute("aria-label", `Remove one ticket for ${participant.name}`);
     subtractButton.addEventListener("click", () => removeTicket(participant.name));
 
     removeAllButton.type = "button";
-    removeAllButton.textContent = "Remove all";
+    removeAllButton.innerHTML = '<i data-lucide="trash-2"></i><span>Remove all</span>';
     removeAllButton.className = "remove-all-button";
     removeAllButton.addEventListener("click", () => removeAllTickets(participant.name));
 
@@ -375,6 +392,8 @@ function renderParticipantSummary() {
     item.append(identity, controls);
     participantList.append(item);
   });
+
+  renderIcons();
 }
 
 function drawEmptyWheel() {
@@ -501,6 +520,7 @@ function spinWheel() {
 
   window.setTimeout(() => {
     stopTicking();
+    playWinnerSound();
     finishSpin(winningTicket);
   }, SPIN_TIME);
 }
@@ -513,6 +533,7 @@ function finishSpin(winningTicket) {
   winnerPrizeText.textContent = prizeName ? prizeName : "";
   logWinner(winningTicket.name, prizeName);
   celebrateWinner();
+  announceWinner(winningTicket.name, prizeName);
 
   window.setTimeout(() => {
     canvas.style.transition = "none";
@@ -525,6 +546,31 @@ function finishSpin(winningTicket) {
       canvas.style.transition = "";
     });
   }, 650);
+}
+
+function announceWinner(winnerName, prizeName) {
+  if (!window.Swal) {
+    return;
+  }
+
+  window.Swal.fire({
+    title: "Winner!",
+    html: `
+      <div class="winner-alert">
+        <strong>${escapeHTML(winnerName)}</strong>
+        ${prizeName ? `<span>${escapeHTML(prizeName)}</span>` : ""}
+      </div>
+    `,
+    icon: "success",
+    confirmButtonText: "Continue",
+    confirmButtonColor: "#2d7c7f",
+    background: "#fffaf1",
+    color: "#1d2433",
+    customClass: {
+      popup: "raffle-alert-popup",
+      title: "raffle-alert-title"
+    }
+  });
 }
 
 function logWinner(winnerName, prizeName) {
@@ -599,20 +645,54 @@ function escapeCSVValue(value) {
   return escapedValue;
 }
 
-function clearAllEntries() {
-  if (!confirm("Clear all ticket entries? This cannot be undone.")) {
+async function confirmAction(title, text, confirmButtonText) {
+  if (!window.Swal) {
+    return confirm(`${title}\n\n${text}`);
+  }
+
+  const result = await window.Swal.fire({
+    title,
+    text,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText,
+    cancelButtonText: "Cancel",
+    confirmButtonColor: "#c94f5f",
+    cancelButtonColor: "#667085",
+    background: "#fffaf1",
+    color: "#1d2433"
+  });
+
+  return result.isConfirmed;
+}
+
+async function clearAllEntries() {
+  const confirmed = await confirmAction(
+    "Clear all ticket entries?",
+    "This removes every active ticket from the raffle. This cannot be undone.",
+    "Clear Entries"
+  );
+
+  if (!confirmed) {
     return;
   }
 
   state.entries = [];
   highlightedWinnerKey = "";
+  resetWinnerDisplay();
   saveState();
   showMessage("All ticket entries were cleared.", "success");
   renderApp();
 }
 
-function clearWinnerLog() {
-  if (!confirm("Clear the winner log? This cannot be undone.")) {
+async function clearWinnerLog() {
+  const confirmed = await confirmAction(
+    "Clear the winner log?",
+    "This removes the saved drawing history. This cannot be undone.",
+    "Clear Winner Log"
+  );
+
+  if (!confirmed) {
     return;
   }
 
@@ -621,8 +701,14 @@ function clearWinnerLog() {
   renderApp();
 }
 
-function resetRaffle() {
-  if (!confirm("Reset the entire raffle, including entries, prizes, and winner log? This cannot be undone.")) {
+async function resetRaffle() {
+  const confirmed = await confirmAction(
+    "Reset the entire raffle?",
+    "This clears entries, prize text, highlights, and the winner log. This cannot be undone.",
+    "Full Reset"
+  );
+
+  if (!confirmed) {
     return;
   }
 
@@ -631,6 +717,7 @@ function resetRaffle() {
   state.currentPrize = "";
   highlightedWinnerKey = "";
   prizeInput.value = "";
+  resetWinnerDisplay();
   saveState();
   showMessage("The raffle was reset.", "success");
   renderApp();
@@ -655,6 +742,10 @@ function getAudioContext() {
 }
 
 function playTickSound() {
+  if (!soundToggle.checked) {
+    return;
+  }
+
   const context = getAudioContext();
 
   if (!context) {
@@ -677,7 +768,42 @@ function playTickSound() {
   oscillator.stop(now + 0.05);
 }
 
+function playWinnerSound() {
+  if (!soundToggle.checked) {
+    return;
+  }
+
+  const context = getAudioContext();
+
+  if (!context) {
+    return;
+  }
+
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+
+  notes.forEach((frequency, index) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const start = context.currentTime + index * 0.085;
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.09, start + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.26);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(start + 0.28);
+  });
+}
+
 function startTicking() {
+  if (!soundToggle.checked) {
+    return;
+  }
+
   let tickDelay = 58;
 
   stopTicking();
@@ -699,30 +825,65 @@ function stopTicking() {
 }
 
 function celebrateWinner() {
+  if (window.confetti) {
+    window.confetti({
+      particleCount: 120,
+      spread: 72,
+      origin: { y: 0.58 },
+      scalar: 0.9,
+      ticks: 220
+    });
+
+    window.setTimeout(() => {
+      window.confetti({
+        particleCount: 55,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0.15, y: 0.72 },
+        scalar: 0.78
+      });
+      window.confetti({
+        particleCount: 55,
+        angle: 120,
+        spread: 55,
+        origin: { x: 0.85, y: 0.72 },
+        scalar: 0.78
+      });
+    }, 160);
+
+    return;
+  }
+
+  fallbackConfetti();
+}
+
+function fallbackConfetti() {
   confettiLayer.innerHTML = "";
 
   for (let index = 0; index < 64; index += 1) {
     const piece = document.createElement("span");
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    const startLeft = 22 + Math.random() * 56;
-    const drift = (Math.random() - 0.5) * 24;
-    const fall = 32 + Math.random() * 30;
-    const spin = 220 + Math.random() * 560;
 
     piece.className = "confetti-piece";
     piece.style.backgroundColor = randomColor;
-    piece.style.left = `${startLeft}%`;
-    piece.style.setProperty("--drift", `${drift}rem`);
-    piece.style.setProperty("--fall", `${fall}vh`);
-    piece.style.setProperty("--spin", `${spin}deg`);
+    piece.style.left = `${22 + Math.random() * 56}%`;
+    piece.style.setProperty("--drift", `${(Math.random() - 0.5) * 24}rem`);
+    piece.style.setProperty("--fall", `${32 + Math.random() * 30}vh`);
+    piece.style.setProperty("--spin", `${220 + Math.random() * 560}deg`);
     piece.style.animationDelay = `${Math.random() * 0.35}s`;
-
     confettiLayer.append(piece);
   }
 
   window.setTimeout(() => {
     confettiLayer.innerHTML = "";
   }, 2400);
+}
+
+function escapeHTML(value) {
+  const element = document.createElement("span");
+
+  element.textContent = value;
+  return element.innerHTML;
 }
 
 function renderApp() {
@@ -732,6 +893,7 @@ function renderApp() {
   renderParticipantSummary();
   renderWheel();
   renderWinnerLog();
+  renderIcons();
 }
 
 ticketForm.addEventListener("submit", addTickets);

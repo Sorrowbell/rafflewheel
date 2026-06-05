@@ -102,6 +102,16 @@ The app uses `localStorage` to preserve:
 
 No backend, database, accounts, or server are required.
 
+## Frontend Libraries
+
+The app remains vanilla HTML, CSS, and JavaScript. Lightweight presentation libraries are included locally in `vendor/` so GitHub Pages can serve them with the app:
+
+- Canvas Confetti for winner celebrations
+- SweetAlert2 for winner announcements and confirmation dialogs
+- Lucide Icons for button and section icons
+
+Google Fonts are loaded for Poppins headings and Inter body text.
+
 ## Host Safety Controls
 
 The app asks for confirmation before:

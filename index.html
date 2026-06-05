@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>First Tech CU4Kids Raffle Friendraiser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Poppins:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="vendor/sweetalert2.min.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -11,15 +18,22 @@
 
     <main class="app-shell">
       <header class="hero">
-        <p class="eyebrow">First Tech CU4Kids Raffle Friendraiser!</p>
-        <h1>Raffle Wheel</h1>
+        <div class="hero-title">
+          <p class="eyebrow">First Tech CU4Kids Raffle Friendraiser!</p>
+          <h1>Raffle Wheel</h1>
+        </div>
+        <img
+          class="hero-logo"
+          src="assets/cu4kids-logo.png"
+          alt="Credit Unions for Kids benefiting Children's Miracle Network Hospitals"
+        />
       </header>
 
       <section class="event-layout">
         <section class="wheel-card" aria-label="Main raffle stage">
           <div class="section-heading">
             <div>
-              <h2>The Wheel</h2>
+              <h2><i data-lucide="circle-dot-dashed"></i>The Wheel</h2>
               <p id="oddsText" class="odds-text">Add tickets to begin.</p>
             </div>
           </div>
@@ -29,7 +43,12 @@
             <input id="prizeInput" type="text" maxlength="80" autocomplete="off" placeholder="Wine Basket" />
           </div>
 
-          <button id="spinButton" class="spin-button" type="button" disabled>Spin the Wheel</button>
+          <div class="stage-actions">
+            <button id="spinButton" class="spin-button" type="button" disabled>
+              <i data-lucide="rotate-cw"></i>
+              Spin the Wheel
+            </button>
+          </div>
 
           <div class="wheel-stage">
             <div class="wheel-wrap">
@@ -44,23 +63,20 @@
             <em id="winnerPrizeText"></em>
           </div>
 
-          <p class="helper-text">
-            Winner selection uses every ticket entry. Duplicate participant tickets are separate chances.
-          </p>
         </section>
 
         <aside class="event-rail">
           <section class="stats-grid" aria-label="Raffle statistics">
             <article class="stat-card">
-              <span>Total Tickets</span>
+              <span><i data-lucide="ticket"></i>Total Tickets</span>
               <strong id="totalTicketsText">0</strong>
             </article>
             <article class="stat-card">
-              <span>Unique Participants</span>
+              <span><i data-lucide="users"></i>Unique Participants</span>
               <strong id="uniqueParticipantsText">0</strong>
             </article>
             <article class="stat-card">
-              <span>Winners Drawn</span>
+              <span><i data-lucide="trophy"></i>Winners Drawn</span>
               <strong id="winnersDrawnText">0</strong>
             </article>
           </section>
@@ -68,9 +84,10 @@
           <section class="panel winner-log-panel" aria-label="Winner log">
             <div class="section-heading">
               <div>
-                <h2>Winner Log</h2>
+                <h2><i data-lucide="clipboard-list"></i>Winner Log</h2>
               </div>
               <button id="exportWinnerLogButton" class="secondary-button compact-button" type="button" disabled>
+                <i data-lucide="download"></i>
                 Export CSV
               </button>
             </div>
@@ -82,7 +99,7 @@
       <section class="panel ticket-entry-panel" aria-label="Add tickets">
         <div class="section-heading">
           <div>
-            <h2>Add Tickets</h2>
+            <h2><i data-lucide="ticket-plus"></i>Add Tickets</h2>
             <p class="helper-text">Each ticket is stored as one raffle entry.</p>
           </div>
         </div>
@@ -98,7 +115,10 @@
             <input id="ticketQuantityInput" type="number" min="1" step="1" value="1" inputmode="numeric" />
           </div>
 
-          <button type="submit">Add Tickets</button>
+          <button type="submit">
+            <i data-lucide="plus"></i>
+            Add Tickets
+          </button>
         </form>
         <p id="messageText" class="message" aria-live="polite"></p>
       </section>
@@ -106,7 +126,7 @@
       <section class="panel participant-panel" aria-label="Participant management">
         <div class="section-heading">
           <div>
-            <h2>Participant Management</h2>
+            <h2><i data-lucide="users"></i>Participant Management</h2>
             <p class="helper-text">
               Counts are grouped for management only. The drawing still uses every individual ticket entry.
             </p>
@@ -118,17 +138,33 @@
 
       <details class="panel host-controls-panel" aria-label="Admin and reset tools">
         <summary>
-          <span>Admin / Reset Tools</span>
+          <span><i data-lucide="settings"></i>Admin / Reset Tools</span>
           <small>Clear entries, clear winner log, or reset the raffle</small>
         </summary>
         <div class="control-grid">
-          <button id="clearEntriesButton" class="secondary-button" type="button" disabled>Clear Entries</button>
-          <button id="clearWinnerLogButton" class="secondary-button" type="button" disabled>Clear Winner Log</button>
-          <button id="resetRaffleButton" class="danger-subtle-button" type="button">Full Reset</button>
+          <label class="sound-toggle" for="soundToggle">
+            <input id="soundToggle" type="checkbox" checked />
+            <span>Sound effects</span>
+          </label>
+          <button id="clearEntriesButton" class="secondary-button" type="button" disabled>
+            <i data-lucide="trash-2"></i>
+            Clear Entries
+          </button>
+          <button id="clearWinnerLogButton" class="secondary-button" type="button" disabled>
+            <i data-lucide="list-x"></i>
+            Clear Winner Log
+          </button>
+          <button id="resetRaffleButton" class="danger-subtle-button" type="button">
+            <i data-lucide="rotate-ccw"></i>
+            Full Reset
+          </button>
         </div>
       </details>
     </main>
 
+    <script src="vendor/confetti.browser.min.js"></script>
+    <script src="vendor/sweetalert2.all.min.js"></script>
+    <script src="vendor/lucide.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
