@@ -1224,6 +1224,7 @@ function renderWinnerLog() {
     const details = document.createElement("div");
     const winnerName = document.createElement("strong");
     const prizeName = document.createElement("span");
+    const removeButton = document.createElement("button");
 
     item.className = "winner-log-item";
     drawNumber.className = "draw-number";
@@ -1231,11 +1232,40 @@ function renderWinnerLog() {
     winnerName.textContent = winner.name;
     prizeName.textContent = winner.prize ? winner.prize : "No prize listed";
     prizeName.className = winner.prize ? "" : "muted";
+    removeButton.className = "winner-remove-button";
+    removeButton.type = "button";
+    removeButton.innerHTML = '<i data-lucide="trash-2"></i>';
+    removeButton.setAttribute("aria-label", `Remove winner ${winner.name}`);
+    removeButton.addEventListener("click", () => removeWinnerLogEntry(index));
 
     details.append(winnerName, prizeName);
-    item.append(drawNumber, details);
+    item.append(drawNumber, details, removeButton);
     winnerLogList.append(item);
   });
+
+  renderIcons();
+}
+
+async function removeWinnerLogEntry(index) {
+  const winner = state.winners[index];
+
+  if (!winner) {
+    return;
+  }
+
+  const confirmed = await confirmAction(
+    "Remove this winner?",
+    `${winner.name}${winner.prize ? ` — ${winner.prize}` : ""} will be removed from the winner log. This cannot be undone.`,
+    "Remove Winner"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  state.winners.splice(index, 1);
+  saveState();
+  renderApp();
 }
 
 function exportWinnerLogCSV() {

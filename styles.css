@@ -1142,7 +1142,7 @@ textarea:focus {
 
 .winner-log-item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.7rem;
   align-items: center;
   border: 1px solid var(--line);
@@ -1177,6 +1177,25 @@ textarea:focus {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 750;
+}
+
+.winner-remove-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #e8bdc4;
+  border-radius: 8px;
+  padding: 0;
+  color: var(--accent-dark);
+  background: #fff4f6;
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.winner-remove-button:hover {
+  background: #ffe7eb;
 }
 
 .empty-state {
@@ -1445,4 +1464,5 @@ textarea:focus {
   .winner-display strong {
     font-size: clamp(1.45rem, 9vw, 1.8rem);
   }
+
 }
