@@ -17,6 +17,19 @@ const defaultPrizes = [
   { name: "Pet Lover Basket", icon: "🐾" }
 ];
 
+const prizeAliases = {
+  [getPrizeKey("Cozy Reader")]: "The Cozy Reader",
+  [getPrizeKey("Wine Tasting")]: "Wine Tasting",
+  [getPrizeKey("Summer Fun Toy Basket")]: "Summer Fun Toy Basket",
+  [getPrizeKey("Nike")]: "Nike Basket",
+  [getPrizeKey("Pet Lover")]: "Pet Lover Basket",
+  [getPrizeKey("Coffee Basket")]: "Thanks, A Latte Basket",
+  [getPrizeKey("McMenamins")]: "McMenamins Signature Pint & Passport Package",
+  [getPrizeKey("Pie in the Face")]: "Pie in the Face",
+  [getPrizeKey("4th of July Basket")]: "4th of July Basket",
+  [getPrizeKey("Mom and Baby Basket")]: "Mom and Baby Basket"
+};
+
 const colors = [
   "#d94b5d",
   "#287c80",
@@ -96,17 +109,23 @@ const state = {
   entries: [],
   winners: [],
   currentPrize: "",
-  customPrizes: []
+  customPrizes: [],
+  eventRows: []
 };
 
 const canvas = document.querySelector("#wheelCanvas");
 const ctx = canvas.getContext("2d");
 const wheelCard = document.querySelector(".wheel-card");
+const wheelHoverLabel = document.querySelector("#wheelHoverLabel");
 const ticketForm = document.querySelector("#ticketForm");
 const nameInput = document.querySelector("#nameInput");
 const ticketQuantityInput = document.querySelector("#ticketQuantityInput");
 const prizeInput = document.querySelector("#prizeInput");
 const prizePreview = document.querySelector("#prizePreview");
+const eventFileInput = document.querySelector("#eventFileInput");
+const eventDataInput = document.querySelector("#eventDataInput");
+const loadEventDataButton = document.querySelector("#loadEventDataButton");
+const eventDataSummary = document.querySelector("#eventDataSummary");
 const soundToggle = document.querySelector("#soundToggle");
 const participantSearchInput = document.querySelector("#participantSearchInput");
 const participantList = document.querySelector("#participantList");
@@ -146,6 +165,13 @@ function getPrizeKey(prizeName) {
   return normalizeName(prizeName).toLowerCase();
 }
 
+function canonicalizePrizeName(prizeName) {
+  const normalizedPrize = normalizeName(prizeName);
+  const aliasPrize = prizeAliases[getPrizeKey(normalizedPrize)];
+
+  return aliasPrize || normalizedPrize;
+}
+
 function normalizeCustomPrizes(prizes) {
   const seenPrizes = new Set();
 
@@ -163,6 +189,40 @@ function normalizeCustomPrizes(prizes) {
     });
 }
 
+function normalizeEventRows(rows) {
+  return rows
+    .map((row) => ({
+      name: normalizeName(String(row.name || "")),
+      prize: canonicalizePrizeName(String(row.prize || "")),
+      tickets: Math.floor(Number(row.tickets))
+    }))
+    .filter((row) => row.name && row.prize && Number.isFinite(row.tickets) && row.tickets > 0);
+}
+
+function hasEventRows() {
+  return state.eventRows.length > 0;
+}
+
+function getEventPrizeOptions() {
+  const prizes = new Map();
+
+  state.eventRows.forEach((row) => {
+    const prizeKey = getPrizeKey(row.prize);
+    const defaultPrize = defaultPrizes.find((prize) => getPrizeKey(prize.name) === prizeKey);
+    const customPrize = state.customPrizes.find((name) => getPrizeKey(name) === prizeKey);
+
+    if (!prizes.has(prizeKey)) {
+      prizes.set(prizeKey, {
+        name: customPrize || row.prize,
+        icon: defaultPrize ? defaultPrize.icon : "🎁",
+        eventPrize: true
+      });
+    }
+  });
+
+  return [...prizes.values()];
+}
+
 function getAllPrizes() {
   const customPrizeOptions = state.customPrizes.map((name) => ({
     name,
@@ -170,7 +230,15 @@ function getAllPrizes() {
     custom: true
   }));
 
-  return [...defaultPrizes, ...customPrizeOptions];
+  if (!hasEventRows()) {
+    return [...defaultPrizes, ...customPrizeOptions];
+  }
+
+  const eventPrizeOptions = getEventPrizeOptions();
+  const eventPrizeKeys = new Set(eventPrizeOptions.map((prize) => getPrizeKey(prize.name)));
+  const extraCustomPrizes = customPrizeOptions.filter((prize) => !eventPrizeKeys.has(getPrizeKey(prize.name)));
+
+  return [...eventPrizeOptions, ...extraCustomPrizes];
 }
 
 function getPrizeByName(prizeName) {
@@ -263,6 +331,7 @@ function loadState() {
       state.customPrizes = Array.isArray(savedState.customPrizes)
         ? normalizeCustomPrizes(savedState.customPrizes)
         : [];
+      state.eventRows = Array.isArray(savedState.eventRows) ? normalizeEventRows(savedState.eventRows) : [];
 
       if (state.currentPrize && !prizeExists(state.currentPrize)) {
         state.customPrizes = normalizeCustomPrizes([...state.customPrizes, state.currentPrize]);
@@ -275,6 +344,7 @@ function loadState() {
     state.winners = [];
     state.currentPrize = "";
     state.customPrizes = [];
+    state.eventRows = [];
   }
 
   migrateLegacyNames();
@@ -290,6 +360,160 @@ function migrateLegacyNames() {
   } catch (error) {
     state.entries = [];
   }
+}
+
+function parseDelimitedLine(line, delimiter) {
+  const values = [];
+  let currentValue = "";
+  let isInsideQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    const nextCharacter = line[index + 1];
+
+    if (character === '"' && isInsideQuotes && nextCharacter === '"') {
+      currentValue += '"';
+      index += 1;
+    } else if (character === '"') {
+      isInsideQuotes = !isInsideQuotes;
+    } else if (character === delimiter && !isInsideQuotes) {
+      values.push(currentValue.trim());
+      currentValue = "";
+    } else {
+      currentValue += character;
+    }
+  }
+
+  values.push(currentValue.trim());
+  return values;
+}
+
+function looksLikeHeader(columns) {
+  const firstColumn = (columns[0] || "").toLowerCase();
+  const secondColumn = (columns[1] || "").toLowerCase();
+  const thirdColumn = (columns[2] || "").toLowerCase();
+
+  return (
+    firstColumn.includes("name") ||
+    firstColumn.includes("participant") ||
+    secondColumn.includes("prize") ||
+    thirdColumn.includes("ticket")
+  );
+}
+
+function parseTicketCount(value) {
+  const cleanedValue = String(value).replace(/[^\d.-]/g, "");
+  const count = Math.floor(Number(cleanedValue));
+
+  return Number.isFinite(count) && count > 0 ? count : 0;
+}
+
+function parseEventData(text) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const firstLine = lines[0] || "";
+  const delimiter = firstLine.includes("\t") ? "\t" : ",";
+  const parsedRows = [];
+  let skippedRows = 0;
+
+  lines.forEach((line, index) => {
+    const columns = parseDelimitedLine(line, delimiter);
+
+    if (index === 0 && looksLikeHeader(columns)) {
+      return;
+    }
+
+    const name = normalizeName(columns[0] || "");
+    const prize = normalizeName(columns[1] || "");
+    const tickets = parseTicketCount(columns[2] || "");
+
+    if (!name || !prize || tickets < 1) {
+      skippedRows += 1;
+      return;
+    }
+
+    parsedRows.push({ name, prize, tickets });
+  });
+
+  return { rows: normalizeEventRows(parsedRows), skippedRows };
+}
+
+function buildEntriesForPrize(prizeName) {
+  const prizeKey = getPrizeKey(prizeName);
+  const entries = [];
+
+  state.eventRows.forEach((row) => {
+    if (getPrizeKey(row.prize) !== prizeKey) {
+      return;
+    }
+
+    for (let count = 0; count < row.tickets; count += 1) {
+      entries.push(row.name);
+    }
+  });
+
+  return entries;
+}
+
+function rebuildEntriesForCurrentPrize() {
+  if (!hasEventRows() || !state.currentPrize) {
+    return;
+  }
+
+  state.entries = buildEntriesForPrize(state.currentPrize);
+  shuffleEntries();
+}
+
+function addEventTicketsForParticipant(name, quantity) {
+  const nameKey = getNameKey(name);
+  const prizeKey = getPrizeKey(state.currentPrize);
+  const matchingRow = state.eventRows.find(
+    (row) => getNameKey(row.name) === nameKey && getPrizeKey(row.prize) === prizeKey
+  );
+
+  if (matchingRow) {
+    matchingRow.tickets += quantity;
+  } else {
+    state.eventRows.push({
+      name,
+      prize: state.currentPrize,
+      tickets: quantity
+    });
+  }
+}
+
+function removeEventTicketForParticipant(name) {
+  const nameKey = getNameKey(name);
+  const prizeKey = getPrizeKey(state.currentPrize);
+  const rowIndex = state.eventRows.findIndex(
+    (row) => getNameKey(row.name) === nameKey && getPrizeKey(row.prize) === prizeKey
+  );
+
+  if (rowIndex < 0) {
+    return false;
+  }
+
+  state.eventRows[rowIndex].tickets -= 1;
+
+  if (state.eventRows[rowIndex].tickets <= 0) {
+    state.eventRows.splice(rowIndex, 1);
+  }
+
+  return true;
+}
+
+function removeAllEventTicketsForParticipant(name) {
+  const nameKey = getNameKey(name);
+  const prizeKey = getPrizeKey(state.currentPrize);
+  const originalCount = state.eventRows.length;
+
+  state.eventRows = state.eventRows.filter(
+    (row) => !(getNameKey(row.name) === nameKey && getPrizeKey(row.prize) === prizeKey)
+  );
+
+  return originalCount !== state.eventRows.length;
 }
 
 function getParticipantSummary() {
@@ -330,11 +554,21 @@ function addTickets(event) {
     return;
   }
 
-  for (let count = 0; count < quantity; count += 1) {
-    state.entries.push(name);
-  }
+  if (hasEventRows()) {
+    if (!state.currentPrize) {
+      showMessage("Select a prize before adding tickets to the event drawing.");
+      return;
+    }
 
-  shuffleEntries();
+    addEventTicketsForParticipant(name, quantity);
+    rebuildEntriesForCurrentPrize();
+  } else {
+    for (let count = 0; count < quantity; count += 1) {
+      state.entries.push(name);
+    }
+
+    shuffleEntries();
+  }
 
   saveState();
   showMessage(`${quantity} ticket${quantity === 1 ? "" : "s"} added for ${name}.`, "success");
@@ -345,15 +579,39 @@ function addTickets(event) {
   nameInput.focus();
 }
 
+function addTicketForParticipant(name) {
+  if (isSpinning) {
+    return;
+  }
+
+  if (hasEventRows() && state.currentPrize) {
+    addEventTicketsForParticipant(name, 1);
+    rebuildEntriesForCurrentPrize();
+  } else {
+    state.entries.push(name);
+    shuffleEntries();
+  }
+
+  saveState();
+  showMessage(`Added 1 ticket for ${name}.`, "success");
+  renderApp();
+}
+
 function removeTicket(name) {
   if (isSpinning) {
     return;
   }
 
   const nameKey = getNameKey(name);
-  const ticketIndex = state.entries.findIndex((entry) => getNameKey(entry) === nameKey);
+  const removedFromEvent = hasEventRows() && state.currentPrize ? removeEventTicketForParticipant(name) : false;
+  const ticketIndex = removedFromEvent ? -1 : state.entries.findIndex((entry) => getNameKey(entry) === nameKey);
 
-  if (ticketIndex >= 0) {
+  if (removedFromEvent) {
+    rebuildEntriesForCurrentPrize();
+    saveState();
+    showMessage(`Removed 1 ticket for ${name}.`, "success");
+    renderApp();
+  } else if (ticketIndex >= 0) {
     state.entries.splice(ticketIndex, 1);
     saveState();
     showMessage(`Removed 1 ticket for ${name}.`, "success");
@@ -369,11 +627,73 @@ function removeAllTickets(name) {
   const nameKey = getNameKey(name);
   const originalCount = state.entries.length;
 
-  state.entries = state.entries.filter((entry) => getNameKey(entry) !== nameKey);
+  if (hasEventRows() && state.currentPrize) {
+    removeAllEventTicketsForParticipant(name);
+    rebuildEntriesForCurrentPrize();
+  } else {
+    state.entries = state.entries.filter((entry) => getNameKey(entry) !== nameKey);
+  }
+
   highlightedWinnerKey = highlightedWinnerKey === nameKey ? "" : highlightedWinnerKey;
   saveState();
   showMessage(`Removed ${originalCount - state.entries.length} ticket entries for ${name}.`, "success");
   renderApp();
+}
+
+function loadEventEntriesFromText(text) {
+  const pastedText = text.trim();
+
+  if (!pastedText) {
+    showMessage("Paste event rows before loading entries.");
+    return;
+  }
+
+  const { rows, skippedRows } = parseEventData(pastedText);
+
+  if (rows.length === 0) {
+    showMessage("No valid event rows were found. Use Participant, Prize, Tickets.");
+    return;
+  }
+
+  state.eventRows = rows;
+  state.entries = [];
+  state.currentPrize = "";
+  highlightedWinnerKey = "";
+  prizeInput.value = "";
+  resetWinnerDisplay();
+  saveState();
+  showMessage(
+    `Loaded ${rows.length} row${rows.length === 1 ? "" : "s"}${skippedRows ? ` and skipped ${skippedRows}` : ""}. Select a prize to load its tickets.`,
+    "success"
+  );
+  renderApp();
+}
+
+function loadEventEntriesFromPaste() {
+  loadEventEntriesFromText(eventDataInput.value);
+}
+
+function loadEventEntriesFromFile(event) {
+  const file = event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.addEventListener("load", () => {
+    const fileText = String(reader.result || "");
+
+    eventDataInput.value = fileText;
+    loadEventEntriesFromText(fileText);
+  });
+
+  reader.addEventListener("error", () => {
+    showMessage("That file could not be read. Try exporting as CSV or TSV.");
+  });
+
+  reader.readAsText(file);
 }
 
 function renderDashboard() {
@@ -405,25 +725,47 @@ function renderPrizeOptions() {
   placeholderOption.textContent = "Select a prize";
   prizeInput.append(placeholderOption);
 
-  defaultPrizes.forEach((prize) => {
-    prizeInput.append(createPrizeOption(prize));
-  });
+  if (hasEventRows()) {
+    const eventGroup = document.createElement("optgroup");
+
+    eventGroup.label = "Loaded event prizes";
+    getEventPrizeOptions().forEach((prize) => {
+      eventGroup.append(createPrizeOption(prize));
+    });
+    prizeInput.append(eventGroup);
+  } else {
+    defaultPrizes.forEach((prize) => {
+      prizeInput.append(createPrizeOption(prize));
+    });
+  }
 
   if (state.customPrizes.length > 0) {
     const customGroup = document.createElement("optgroup");
+    const eventPrizeKeys = new Set(getEventPrizeOptions().map((prize) => getPrizeKey(prize.name)));
 
     customGroup.label = "Added prizes";
     state.customPrizes.forEach((name) => {
-      customGroup.append(createPrizeOption({ name, icon: "🎁" }));
+      if (!hasEventRows() || !eventPrizeKeys.has(getPrizeKey(name))) {
+        customGroup.append(createPrizeOption({ name, icon: "🎁" }));
+      }
     });
-    prizeInput.append(customGroup);
+
+    if (customGroup.children.length > 0) {
+      prizeInput.append(customGroup);
+    }
   }
 
   addPrizeOption.value = ADD_PRIZE_VALUE;
   addPrizeOption.textContent = "+ Add prize...";
   prizeInput.append(addPrizeOption);
 
-  prizeInput.value = selectedPrize && prizeExists(selectedPrize) ? selectedPrize : "";
+  if (selectedPrize && prizeExists(selectedPrize)) {
+    prizeInput.value = selectedPrize;
+  } else {
+    state.currentPrize = "";
+    prizeInput.value = "";
+  }
+
   renderPrizePreview();
 }
 
@@ -454,6 +796,19 @@ function renderPrizePreview() {
   icon.textContent = selectedPrize.icon;
   name.textContent = selectedPrize.name;
   prizePreview.append(icon, name);
+}
+
+function renderEventDataSummary() {
+  if (!hasEventRows()) {
+    eventDataSummary.textContent = "No event entries loaded.";
+    return;
+  }
+
+  const totalTickets = state.eventRows.reduce((total, row) => total + row.tickets, 0);
+  const prizeCount = new Set(state.eventRows.map((row) => getPrizeKey(row.prize))).size;
+  const participantCount = new Set(state.eventRows.map((row) => getNameKey(row.name))).size;
+
+  eventDataSummary.textContent = `${prizeCount} prize${prizeCount === 1 ? "" : "s"} loaded • ${totalTickets} ticket${totalTickets === 1 ? "" : "s"} • ${participantCount} participant${participantCount === 1 ? "" : "s"}`;
 }
 
 async function promptForCustomPrize(previousPrize) {
@@ -506,8 +861,11 @@ async function promptForCustomPrize(previousPrize) {
 
   state.customPrizes = normalizeCustomPrizes([...state.customPrizes, prizeName]);
   state.currentPrize = prizeName;
+  if (hasEventRows()) {
+    state.entries = [];
+  }
   saveState();
-  renderPrizeOptions();
+  renderApp();
 }
 
 function handlePrizeChange() {
@@ -520,8 +878,19 @@ function handlePrizeChange() {
   }
 
   state.currentPrize = selectedPrize;
+  highlightedWinnerKey = "";
+
+  if (hasEventRows()) {
+    if (state.currentPrize) {
+      rebuildEntriesForCurrentPrize();
+    } else {
+      state.entries = [];
+    }
+    resetWinnerDisplay();
+  }
+
   saveState();
-  renderPrizePreview();
+  renderApp();
 }
 
 function renderParticipantSummary() {
@@ -568,12 +937,7 @@ function renderParticipantSummary() {
     addButton.type = "button";
     addButton.innerHTML = '<i data-lucide="plus"></i><span>+1</span>';
     addButton.setAttribute("aria-label", `Add one ticket for ${participant.name}`);
-    addButton.addEventListener("click", () => {
-      state.entries.push(participant.name);
-      shuffleEntries();
-      saveState();
-      renderApp();
-    });
+    addButton.addEventListener("click", () => addTicketForParticipant(participant.name));
 
     subtractButton.type = "button";
     subtractButton.innerHTML = '<i data-lucide="minus"></i><span>-1</span>';
@@ -619,6 +983,7 @@ function drawEmptyWheel() {
 function renderWheel() {
   if (state.entries.length === 0) {
     drawEmptyWheel();
+    hideWheelHoverLabel();
     return;
   }
 
@@ -681,6 +1046,49 @@ function renderWheel() {
   ctx.fillText(`${state.entries.length} tickets`, center, center + 19);
 }
 
+function hideWheelHoverLabel() {
+  wheelHoverLabel.classList.remove("is-visible");
+  wheelHoverLabel.textContent = "";
+}
+
+function handleWheelHover(event) {
+  if (isSpinning || state.entries.length === 0) {
+    hideWheelHoverLabel();
+    return;
+  }
+
+  const bounds = canvas.getBoundingClientRect();
+  const x = event.clientX - bounds.left;
+  const y = event.clientY - bounds.top;
+  const center = bounds.width / 2;
+  const radius = center - 22 * (bounds.width / canvas.width);
+  const distanceFromCenter = Math.hypot(x - center, y - center);
+
+  if (distanceFromCenter > radius || distanceFromCenter < radius * 0.16) {
+    hideWheelHoverLabel();
+    return;
+  }
+
+  let angle = Math.atan2(y - center, x - center);
+
+  if (angle < 0) {
+    angle += Math.PI * 2;
+  }
+
+  const sliceIndex = Math.floor(angle / ((Math.PI * 2) / state.entries.length));
+  const hoveredName = state.entries[sliceIndex];
+
+  if (!hoveredName) {
+    hideWheelHoverLabel();
+    return;
+  }
+
+  wheelHoverLabel.textContent = hoveredName;
+  wheelHoverLabel.style.left = `${x}px`;
+  wheelHoverLabel.style.top = `${y}px`;
+  wheelHoverLabel.classList.add("is-visible");
+}
+
 function selectWinningTicket() {
   // This is the core raffle rule: choose from the full duplicate-name ticket array.
   // If Sarah bought 5 tickets and Mike bought 1, Sarah appears 5 times here and has 5 chances.
@@ -731,6 +1139,9 @@ function finishSpin(winningTicket) {
   winnerPrizeText.textContent = prizeName ? prizeName : "";
   logWinner(winningTicket.name, prizeName);
   state.currentPrize = "";
+  if (hasEventRows()) {
+    state.entries = [];
+  }
   prizeInput.value = "";
   saveState();
   celebrateWinner();
@@ -879,6 +1290,11 @@ async function clearAllEntries() {
     return;
   }
 
+  if (hasEventRows() && state.currentPrize) {
+    state.currentPrize = "";
+    prizeInput.value = "";
+  }
+
   state.entries = [];
   highlightedWinnerKey = "";
   resetWinnerDisplay();
@@ -918,6 +1334,8 @@ async function resetRaffle() {
   state.winners = [];
   state.currentPrize = "";
   state.customPrizes = [];
+  state.eventRows = [];
+  eventDataInput.value = "";
   highlightedWinnerKey = "";
   prizeInput.value = "";
   resetWinnerDisplay();
@@ -1158,6 +1576,7 @@ function escapeHTML(value) {
 
 function renderApp() {
   renderPrizeOptions();
+  renderEventDataSummary();
   saveState();
   renderDashboard();
   renderParticipantSummary();
@@ -1169,6 +1588,10 @@ function renderApp() {
 ticketForm.addEventListener("submit", addTickets);
 participantSearchInput.addEventListener("input", renderParticipantSummary);
 prizeInput.addEventListener("change", handlePrizeChange);
+eventFileInput.addEventListener("change", loadEventEntriesFromFile);
+loadEventDataButton.addEventListener("click", loadEventEntriesFromPaste);
+canvas.addEventListener("mousemove", handleWheelHover);
+canvas.addEventListener("mouseleave", hideWheelHoverLabel);
 spinButton.addEventListener("click", spinWheel);
 clearEntriesButton.addEventListener("click", clearAllEntries);
 clearWinnerLogButton.addEventListener("click", clearWinnerLog);

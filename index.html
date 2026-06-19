@@ -59,6 +59,13 @@
             </div>
           </div>
 
+          <div class="prize-field live-prize-field">
+            <label for="prizeInput" class="prize-label">Current Prize</label>
+            <select id="prizeInput">
+              <option value="">Select a prize</option>
+            </select>
+          </div>
+
           <div class="selected-prize-slot" aria-live="polite">
             <div id="prizePreview" class="prize-preview" aria-live="polite"></div>
           </div>
@@ -73,6 +80,7 @@
           <div class="wheel-stage">
             <div class="wheel-wrap">
               <canvas id="wheelCanvas" width="720" height="720" aria-label="Colorful raffle wheel"></canvas>
+              <div id="wheelHoverLabel" class="wheel-hover-label" aria-hidden="true"></div>
               <div class="pointer" aria-hidden="true"></div>
             </div>
           </div>
@@ -101,52 +109,82 @@
         </aside>
       </section>
 
-      <section class="panel ticket-entry-panel" aria-label="Add entries">
-        <div class="section-heading">
+      <details class="panel ticket-entry-panel collapsible-panel" aria-label="Add entries">
+        <summary>
           <div>
             <h2><i data-lucide="ticket-plus"></i>Add Entries</h2>
             <p class="helper-text">Each ticket is stored as one raffle entry.</p>
           </div>
+        </summary>
+
+        <div class="collapsible-content">
+          <form id="ticketForm" class="ticket-form">
+            <div>
+              <label for="nameInput">Participant</label>
+              <input id="nameInput" type="text" maxlength="60" autocomplete="off" placeholder="Jonathan Consumer" />
+            </div>
+
+            <div>
+              <label for="ticketQuantityInput">Ticket quantity</label>
+              <input id="ticketQuantityInput" type="number" min="1" step="1" value="1" inputmode="numeric" />
+            </div>
+
+            <button type="submit">
+              <i data-lucide="plus"></i>
+              Add Tickets
+            </button>
+          </form>
+          <p id="messageText" class="message" aria-live="polite"></p>
         </div>
+      </details>
 
-        <div class="prize-field entry-prize-field">
-          <label for="prizeInput" class="prize-label">Current Prize</label>
-          <select id="prizeInput">
-            <option value="">Select a prize</option>
-          </select>
+      <details class="panel event-import-panel collapsible-panel" aria-label="Load event entries">
+        <summary>
+          <div>
+            <h2><i data-lucide="file-spreadsheet"></i>Load Event Entries</h2>
+            <p class="helper-text">
+              Paste Excel or CSV rows with columns for participant, prize, and ticket quantity.
+            </p>
+          </div>
+        </summary>
+
+        <div class="collapsible-content">
+          <div class="event-import-form">
+            <div class="event-import-fields">
+              <label for="eventFileInput">Choose CSV or TSV file</label>
+              <input id="eventFileInput" type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" />
+              <label for="eventDataInput">Or paste rows</label>
+              <textarea
+                id="eventDataInput"
+                class="event-paste-input"
+                rows="5"
+                spellcheck="false"
+                placeholder="Participant&#9;Prize&#9;Tickets&#10;Jonathan Consumer&#9;Wine Tasting&#9;3&#10;Sarah Martinez&#9;Wine Tasting&#9;1"
+              ></textarea>
+            </div>
+            <button id="loadEventDataButton" class="secondary-button" type="button">
+              <i data-lucide="upload"></i>
+              Load Event Entries
+            </button>
+          </div>
+          <p id="eventDataSummary" class="event-summary" aria-live="polite">No event entries loaded.</p>
         </div>
+      </details>
 
-        <form id="ticketForm" class="ticket-form">
-          <div>
-            <label for="nameInput">Participant</label>
-            <input id="nameInput" type="text" maxlength="60" autocomplete="off" placeholder="Jonathan Consumer" />
-          </div>
-
-          <div>
-            <label for="ticketQuantityInput">Ticket quantity</label>
-            <input id="ticketQuantityInput" type="number" min="1" step="1" value="1" inputmode="numeric" />
-          </div>
-
-          <button type="submit">
-            <i data-lucide="plus"></i>
-            Add Tickets
-          </button>
-        </form>
-        <p id="messageText" class="message" aria-live="polite"></p>
-      </section>
-
-      <section class="panel participant-panel" aria-label="Participant management">
-        <div class="section-heading">
+      <details class="panel participant-panel collapsible-panel" aria-label="Participant management">
+        <summary>
           <div>
             <h2><i data-lucide="users"></i>Tickets by Participant</h2>
             <p class="helper-text">
               Counts are grouped for management only. The drawing still uses every individual ticket entry.
             </p>
           </div>
+        </summary>
+        <div class="collapsible-content">
           <input id="participantSearchInput" class="search-input" type="search" placeholder="Search participants" />
+          <div id="participantList" class="participant-list"></div>
         </div>
-        <div id="participantList" class="participant-list"></div>
-      </section>
+      </details>
 
       <details class="panel host-controls-panel" aria-label="Admin and reset tools">
         <summary>

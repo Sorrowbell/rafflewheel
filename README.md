@@ -6,12 +6,12 @@ It is built with plain HTML, CSS, and JavaScript, so it can run directly in a br
 
 ## Fundraiser Workflow
 
-1. Enter the participant name.
-2. Enter the number of tickets purchased.
-3. Click **Add Tickets**.
-4. Add an optional current prize name.
-5. Spin the wheel.
-6. The winner is logged automatically.
+1. Paste the event ticket sheet, or add tickets manually.
+2. Select the prize being drawn.
+3. Confirm the wheel loaded the tickets for that prize.
+4. Spin the wheel.
+5. The winner is logged automatically with the selected prize.
+6. Select the next prize and repeat.
 7. Export the winner log when the event is finished.
 
 ## How Tickets Work
@@ -50,9 +50,47 @@ Each participant row includes:
 
 The participant list is searchable and sorted alphabetically.
 
+## Event Entry Import
+
+For a smooth live drawing session, paste rows from Excel, Numbers, Google Sheets, or load a CSV/TSV file in **Load Event Entries**.
+
+Use three columns:
+
+```text
+Participant,Prize,Tickets
+Jonathan Consumer,Wine Tasting,3
+Sarah Martinez,Wine Tasting,1
+Mike Lee,Pet Lover Basket,2
+```
+
+Copying directly from a spreadsheet also works:
+
+```text
+Participant	Prize	Tickets
+Jonathan Consumer	Wine Tasting	3
+Sarah Martinez	Wine Tasting	1
+Mike Lee	Pet Lover Basket	2
+```
+
+For file loading, export the spreadsheet as `.csv` or `.tsv` first. Raw `.xlsx` files are not parsed directly because the app stays lightweight and no-backend for GitHub Pages.
+
+After loading the event entries, the prize selector shows the prizes found in the pasted data. Choosing a prize instantly loads only that prize's ticket entries onto the wheel. The winner is still selected from the duplicate-name ticket array for that prize, so the raffle odds remain transparent and auditable.
+
+After each spin, the selected prize resets and the active wheel clears. The loaded event sheet stays saved in `localStorage` until a full reset, so the host can select the next prize and continue drawing.
+
+Imported prize names can use event shorthand. These are normalized to the full basket names automatically:
+
+```text
+Cozy Reader -> The Cozy Reader
+Nike -> Nike Basket
+Pet Lover -> Pet Lover Basket
+Coffee Basket -> Thanks, A Latte Basket
+McMenamins -> McMenamins Signature Pint & Passport Package
+```
+
 ## Prize Tracking
 
-The **Current Prize** selector includes the event basket list and an **Add prize** option for one-off prizes.
+The prize selector includes loaded event prizes, the event basket list, and an **Add prize** option for one-off prizes.
 
 If a prize is selected before spinning, that prize is saved with the winner log entry:
 
