@@ -30,6 +30,8 @@ const prizeAliases = {
   [getPrizeKey("Mom and Baby Basket")]: "Mom and Baby Basket"
 };
 
+const posterPrizeOrder = new Map(defaultPrizes.map((prize, index) => [getPrizeKey(prize.name), index + 1]));
+
 const colors = [
   "#d94b5d",
   "#287c80",
@@ -220,7 +222,16 @@ function getEventPrizeOptions() {
     }
   });
 
-  return [...prizes.values()];
+  return [...prizes.values()].sort((firstPrize, secondPrize) => {
+    const firstOrder = posterPrizeOrder.get(getPrizeKey(firstPrize.name)) || Number.MAX_SAFE_INTEGER;
+    const secondOrder = posterPrizeOrder.get(getPrizeKey(secondPrize.name)) || Number.MAX_SAFE_INTEGER;
+
+    if (firstOrder !== secondOrder) {
+      return firstOrder - secondOrder;
+    }
+
+    return firstPrize.name.localeCompare(secondPrize.name);
+  });
 }
 
 function getAllPrizes() {
