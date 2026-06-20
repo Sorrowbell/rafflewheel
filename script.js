@@ -143,6 +143,7 @@ const winnersDrawnText = document.querySelector("#winnersDrawnText");
 const oddsText = document.querySelector("#oddsText");
 const winnerNameText = document.querySelector("#winnerNameText");
 const winnerPrizeText = document.querySelector("#winnerPrizeText");
+const winnerDisplay = document.querySelector(".winner-display");
 const messageText = document.querySelector("#messageText");
 const confettiLayer = document.querySelector("#confettiLayer");
 
@@ -310,6 +311,7 @@ function showMessage(message, type = "error") {
 function resetWinnerDisplay() {
   winnerNameText.textContent = "No winner yet";
   winnerPrizeText.textContent = "";
+  winnerDisplay.classList.remove("has-winner");
 }
 
 function renderIcons() {
@@ -717,11 +719,17 @@ function renderDashboard() {
   clearEntriesButton.disabled = state.entries.length === 0 || isSpinning;
   clearWinnerLogButton.disabled = state.winners.length === 0;
   exportWinnerLogButton.disabled = state.winners.length === 0;
+  wheelCard.classList.toggle("is-ready", state.entries.length > 0 && !isSpinning);
+  wheelCard.classList.toggle("is-drawing", isSpinning);
 
-  if (state.entries.length === 0) {
-    oddsText.textContent = "Add tickets to begin.";
+  if (isSpinning) {
+    oddsText.textContent = "Drawing now...";
+  } else if (state.entries.length === 0 && hasEventRows()) {
+    oddsText.textContent = "Select a prize to load its tickets.";
+  } else if (state.entries.length === 0) {
+    oddsText.textContent = "Add tickets or select a loaded prize to begin.";
   } else {
-    oddsText.textContent = `${state.entries.length} ticket ${state.entries.length === 1 ? "entry" : "entries"} active`;
+    oddsText.textContent = `Ready to draw • ${state.entries.length} ticket${state.entries.length === 1 ? "" : "s"} loaded • ${participants.length} participant${participants.length === 1 ? "" : "s"}`;
   }
 }
 
@@ -790,23 +798,28 @@ function createPrizeOption(prize) {
 
 function renderPrizePreview() {
   const selectedPrize = getPrizeByName(state.currentPrize);
+  const kicker = document.createElement("span");
+  const name = document.createElement("strong");
 
   prizePreview.innerHTML = "";
+  kicker.className = "prize-preview-kicker";
 
   if (!selectedPrize) {
     prizePreview.classList.add("is-empty");
-    prizePreview.textContent = "";
+    kicker.textContent = "Now Drawing";
+    name.textContent = "Select a prize";
+    prizePreview.append(kicker, name);
     return;
   }
 
-  const name = document.createElement("strong");
   const icon = document.createElement("span");
 
   prizePreview.classList.remove("is-empty");
+  kicker.textContent = "Now Drawing";
   icon.className = "prize-preview-icon";
   icon.textContent = selectedPrize.icon;
   name.textContent = selectedPrize.name;
-  prizePreview.append(icon, name);
+  prizePreview.append(kicker, icon, name);
 }
 
 function renderEventDataSummary() {
@@ -1125,6 +1138,7 @@ function spinWheel() {
 
   isSpinning = true;
   highlightedWinnerKey = "";
+  winnerDisplay.classList.remove("has-winner");
   winnerNameText.textContent = "Drawing...";
   winnerPrizeText.textContent = "";
   showMessage("");
@@ -1148,6 +1162,7 @@ function finishSpin(winningTicket) {
   highlightedWinnerKey = getNameKey(winningTicket.name);
   winnerNameText.textContent = winningTicket.name;
   winnerPrizeText.textContent = prizeName ? prizeName : "";
+  winnerDisplay.classList.add("has-winner");
   logWinner(winningTicket.name, prizeName);
   state.currentPrize = "";
   if (hasEventRows()) {
@@ -1224,14 +1239,31 @@ function renderWinnerLog() {
     const details = document.createElement("div");
     const winnerName = document.createElement("strong");
     const prizeName = document.createElement("span");
+    const prizeIcon = document.createElement("span");
+    const matchedPrize = winner.prize ? getPrizeByName(winner.prize) : null;
     const removeButton = document.createElement("button");
 
     item.className = "winner-log-item";
+    details.className = "winner-log-details";
+    prizeName.className = winner.prize ? "winner-prize-line" : "winner-prize-line muted";
+    prizeIcon.className = "winner-prize-icon";
+    prizeIcon.setAttribute("aria-hidden", "true");
+
+    if (index === state.winners.length - 1) {
+      item.classList.add("is-latest");
+    }
+
     drawNumber.className = "draw-number";
     drawNumber.textContent = index + 1;
     winnerName.textContent = winner.name;
-    prizeName.textContent = winner.prize ? winner.prize : "No prize listed";
-    prizeName.className = winner.prize ? "" : "muted";
+    prizeIcon.textContent = matchedPrize ? matchedPrize.icon : "🎁";
+
+    if (winner.prize) {
+      prizeName.append(prizeIcon, document.createTextNode(winner.prize));
+    } else {
+      prizeName.textContent = "No prize listed";
+    }
+
     removeButton.className = "winner-remove-button";
     removeButton.type = "button";
     removeButton.innerHTML = '<i data-lucide="trash-2"></i>';

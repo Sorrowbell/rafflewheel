@@ -410,7 +410,7 @@ svg {
   min-height: auto;
   border-color: rgba(236, 75, 26, 0.34);
   background:
-    linear-gradient(180deg, #ffffff 0%, #fffaf0 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 240, 0.98) 100%);
   box-shadow: 0 18px 46px rgba(7, 24, 77, 0.14);
 }
 
@@ -424,6 +424,20 @@ svg {
 
 .wheel-card.is-celebrating .winner-display {
   animation: winner-panel-pop 1.2s ease-in-out 2;
+}
+
+.wheel-card.is-ready .wheel-wrap::before {
+  box-shadow:
+    0 0 0 0.42rem rgba(7, 24, 77, 0.08),
+    0 0 0 0.72rem rgba(247, 200, 0, 0.16),
+    0 1.4rem 2.4rem rgba(7, 24, 77, 0.14);
+}
+
+.wheel-card.is-drawing .wheel-stage {
+  border-color: rgba(236, 75, 26, 0.32);
+  background:
+    radial-gradient(ellipse at center, rgba(247, 200, 0, 0.33) 0%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.92), rgba(255, 242, 214, 0.84));
 }
 
 .wheel-card::before,
@@ -528,11 +542,12 @@ svg {
 
 .odds-text {
   width: fit-content;
-  margin: 0.45rem 0 0;
+  margin: 0.35rem 0 0;
   border-radius: 999px;
-  padding: 0.22rem 0.7rem;
+  padding: 0.18rem 0.58rem;
   color: var(--brand-dark);
-  background: #e8f7f7;
+  background: rgba(232, 247, 247, 0.76);
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
@@ -548,27 +563,50 @@ svg {
 }
 
 .wheel-stage {
+  position: relative;
   display: grid;
   place-items: center;
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+  border: 1px solid rgba(19, 125, 141, 0.12);
+  border-radius: 8px;
+  padding: 1rem;
+  background:
+    radial-gradient(ellipse at center, rgba(247, 200, 0, 0.24) 0%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.86), rgba(255, 247, 226, 0.76));
   min-height: 0;
+  overflow: hidden;
+}
+
+.wheel-stage::after {
+  position: absolute;
+  right: 18%;
+  bottom: 0.65rem;
+  left: 18%;
+  height: 0.8rem;
+  border-radius: 50%;
+  content: "";
+  background: rgba(7, 24, 77, 0.12);
+  filter: blur(10px);
 }
 
 .wheel-wrap {
   position: relative;
+  z-index: 1;
   width: min(100%, 28.5rem);
   aspect-ratio: 1;
 }
 
 .wheel-wrap::before {
   position: absolute;
-  inset: -0.72rem;
+  inset: -0.85rem;
   border: 0.3rem solid #fff;
   border-radius: 50%;
   content: "";
+  background:
+    conic-gradient(from 0deg, rgba(236, 75, 26, 0.18), rgba(247, 200, 0, 0.22), rgba(19, 125, 141, 0.18), rgba(21, 87, 200, 0.18), rgba(236, 75, 26, 0.18));
   box-shadow:
-    0 0 0 0.45rem rgba(7, 24, 77, 0.08),
-    0 1.4rem 2.4rem rgba(7, 24, 77, 0.12);
+    0 0 0 0.42rem rgba(7, 24, 77, 0.08),
+    0 1.4rem 2.4rem rgba(7, 24, 77, 0.14);
 }
 
 canvas {
@@ -634,6 +672,32 @@ canvas {
   background: linear-gradient(135deg, #fff4bd 0%, #fffdf8 100%);
   text-align: center;
   box-shadow: inset 0 0 0 0.2rem rgba(255, 255, 255, 0.5);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.winner-display.has-winner {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #fff0a8 0%, #fffdf8 74%);
+  box-shadow:
+    inset 0 0 0 0.2rem rgba(255, 255, 255, 0.58),
+    0 0 0 0.26rem rgba(247, 200, 0, 0.22),
+    0 1rem 2rem rgba(7, 24, 77, 0.12);
+  transform: translateY(-0.08rem);
+}
+
+.winner-display.has-winner span {
+  color: var(--accent);
+}
+
+.winner-display.has-winner em {
+  width: fit-content;
+  margin: 0 auto;
+  border-radius: 999px;
+  padding: 0.24rem 0.7rem;
+  background: rgba(19, 125, 141, 0.1);
 }
 
 @keyframes stage-celebration {
@@ -743,21 +807,25 @@ canvas {
 
 .selected-prize-slot {
   display: grid;
-  min-height: 2.85rem;
+  min-height: 5.1rem;
   place-items: center;
-  margin: 0.15rem 0 0.35rem;
+  margin: 0.2rem 0 0.35rem;
 }
 
 .spin-button {
-  width: min(100%, 20rem);
-  min-height: 3rem;
-  margin: 0.75rem auto 0.35rem;
+  width: min(100%, 22rem);
+  min-height: 3.35rem;
+  margin: 0.55rem auto 0.45rem;
   color: #fff;
   background:
-    linear-gradient(180deg, #ff6837, var(--accent));
-  font-size: 1.08rem;
+    linear-gradient(180deg, #ff7344, var(--accent));
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: 1.12rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  box-shadow: 0 13px 25px rgba(236, 75, 26, 0.28);
+  box-shadow:
+    0 13px 25px rgba(236, 75, 26, 0.28),
+    inset 0 -0.18rem 0 rgba(7, 24, 77, 0.16);
 }
 
 .sound-toggle {
@@ -902,30 +970,60 @@ textarea:focus {
 }
 
 .prize-preview {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, auto);
   align-items: center;
-  gap: 0.55rem;
-  width: fit-content;
+  justify-content: center;
+  gap: 0.1rem 0.65rem;
+  width: min(100%, 31rem);
   max-width: 100%;
-  min-height: 2.1rem;
-  margin-top: 0.65rem;
-  border: 1px solid rgba(19, 120, 135, 0.24);
-  border-radius: 999px;
-  padding: 0.28rem 0.72rem 0.28rem 0.45rem;
-  color: var(--brand-dark);
-  background: #eef9f8;
-  font-size: 0.9rem;
+  min-height: 4.55rem;
+  border: 2px solid rgba(247, 200, 0, 0.85);
+  border-radius: 8px;
+  padding: 0.62rem 1rem;
+  color: var(--navy);
+  background:
+    linear-gradient(90deg, rgba(7, 24, 77, 0.06), transparent 18%, transparent 82%, rgba(236, 75, 26, 0.08)),
+    linear-gradient(135deg, #fff8d6 0%, #fffefa 100%);
+  text-align: center;
   font-weight: 850;
+  box-shadow:
+    inset 0 0 0 0.18rem rgba(255, 255, 255, 0.54),
+    0 0.65rem 1.4rem rgba(7, 24, 77, 0.08);
 }
 
 .prize-preview.is-empty {
-  display: none;
+  grid-template-columns: 1fr;
+  border-color: rgba(19, 125, 141, 0.22);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
 }
 
 .prize-preview-icon {
-  width: 1.85rem;
-  height: 1.85rem;
-  font-size: 1.05rem;
+  grid-row: 1 / span 2;
+  width: 2.7rem;
+  height: 2.7rem;
+  font-size: 1.55rem;
+}
+
+.prize-preview-kicker {
+  color: var(--accent-dark);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.prize-preview strong {
+  overflow-wrap: normal;
+  color: var(--navy);
+  font-family: "Poppins", var(--font-heading, sans-serif);
+  font-size: clamp(1.05rem, 2.35vw, 1.65rem);
+  line-height: 1.05;
+  text-wrap: balance;
 }
 
 .ticket-form button,
@@ -1141,6 +1239,7 @@ textarea:focus {
 }
 
 .winner-log-item {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.7rem;
@@ -1150,6 +1249,19 @@ textarea:focus {
   min-height: 3.35rem;
   padding: 0.45rem 0.55rem;
   background: #fff;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.winner-log-item.is-latest {
+  border-color: rgba(247, 200, 0, 0.95);
+  background: linear-gradient(135deg, #fff8d6 0%, #ffffff 72%);
+  box-shadow:
+    inset 0.28rem 0 0 var(--gold),
+    0 0 0 0.18rem rgba(247, 200, 0, 0.18);
+  animation: latest-winner-pop 900ms ease;
 }
 
 .draw-number {
@@ -1163,7 +1275,7 @@ textarea:focus {
   font-weight: 900;
 }
 
-.winner-log-item div {
+.winner-log-details {
   display: grid;
   gap: 0.05rem;
 }
@@ -1172,11 +1284,43 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
-.winner-log-item span:last-child,
+.winner-prize-line,
 .muted {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 750;
+}
+
+.winner-prize-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.winner-prize-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: inset 0 0 0 1px rgba(7, 24, 77, 0.08);
+  font-size: 0.78rem;
+}
+
+@keyframes latest-winner-pop {
+  0% {
+    transform: scale(0.985);
+  }
+
+  45% {
+    transform: scale(1.015);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .winner-remove-button {

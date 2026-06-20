@@ -88,6 +88,21 @@ Coffee Basket -> Thanks, A Latte Basket
 McMenamins -> McMenamins Signature Pint & Passport Package
 ```
 
+The ten poster baskets are shown in the prize selector in poster order:
+
+```text
+1. Pie in the Face
+2. Wine Tasting
+3. 4th of July Basket
+4. McMenamins Signature Pint & Passport Package
+5. Summer Fun Toy Basket
+6. Nike Basket
+7. The Cozy Reader
+8. Mom and Baby Basket
+9. Thanks, A Latte Basket
+10. Pet Lover Basket
+```
+
 ## Prize Tracking
 
 The prize selector includes loaded event prizes, the event basket list, and an **Add prize** option for one-off prizes.
