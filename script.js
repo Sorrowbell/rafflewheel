@@ -146,6 +146,7 @@ const winnerPrizeText = document.querySelector("#winnerPrizeText");
 const winnerDisplay = document.querySelector(".winner-display");
 const messageText = document.querySelector("#messageText");
 const confettiLayer = document.querySelector("#confettiLayer");
+const presentationModeButton = document.querySelector("#presentationModeButton");
 
 let currentRotation = 0;
 let isSpinning = false;
@@ -323,6 +324,16 @@ function renderIcons() {
       }
     });
   }
+}
+
+function togglePresentationMode() {
+  const isPresentationMode = document.body.classList.toggle("presentation-mode");
+
+  presentationModeButton.setAttribute("aria-pressed", String(isPresentationMode));
+  presentationModeButton.innerHTML = isPresentationMode
+    ? '<i data-lucide="minimize-2"></i> Exit Presentation'
+    : '<i data-lucide="monitor-play"></i> Presentation Mode';
+  renderIcons();
 }
 
 function saveState() {
@@ -729,7 +740,7 @@ function renderDashboard() {
   } else if (state.entries.length === 0) {
     oddsText.textContent = "Add tickets or select a loaded prize to begin.";
   } else {
-    oddsText.textContent = `Ready to draw • ${state.entries.length} ticket${state.entries.length === 1 ? "" : "s"} loaded • ${participants.length} participant${participants.length === 1 ? "" : "s"}`;
+    oddsText.textContent = "Prize loaded. Ready to draw.";
   }
 }
 
@@ -1665,6 +1676,7 @@ eventFileInput.addEventListener("change", loadEventEntriesFromFile);
 loadEventDataButton.addEventListener("click", loadEventEntriesFromPaste);
 canvas.addEventListener("mousemove", handleWheelHover);
 canvas.addEventListener("mouseleave", hideWheelHoverLabel);
+presentationModeButton.addEventListener("click", togglePresentationMode);
 spinButton.addEventListener("click", spinWheel);
 clearEntriesButton.addEventListener("click", clearAllEntries);
 clearWinnerLogButton.addEventListener("click", clearWinnerLog);

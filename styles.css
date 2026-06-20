@@ -126,6 +126,33 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.presentation-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.2rem;
+  border: 1px solid rgba(7, 24, 77, 0.16);
+  border-radius: 999px;
+  padding: 0 0.75rem;
+  color: var(--navy);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0.5rem 1.3rem rgba(7, 24, 77, 0.1);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.presentation-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: -0.35rem 0 0.85rem;
+}
+
+.presentation-toggle[aria-pressed="true"] {
+  color: #fff;
+  background: var(--navy);
+}
+
 .hero::before,
 .hero::after {
   position: absolute;
@@ -1342,6 +1369,108 @@ textarea:focus {
   background: #ffe7eb;
 }
 
+body.presentation-mode .app-shell {
+  width: min(104rem, calc(100% - 1.25rem));
+  padding-top: 0.75rem;
+}
+
+body.presentation-mode .hero {
+  grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr) minmax(8rem, 11rem);
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 0.75rem;
+}
+
+body.presentation-mode h1 {
+  font-size: clamp(1.75rem, 3vw, 3rem);
+}
+
+body.presentation-mode .event-kicker {
+  min-height: 1.45rem;
+  font-size: clamp(0.72rem, 1vw, 0.95rem);
+}
+
+body.presentation-mode .impact-ribbon,
+body.presentation-mode .hero-subtitle {
+  display: none;
+}
+
+body.presentation-mode .hero-logo {
+  max-height: 4.6rem;
+}
+
+body.presentation-mode .basket-badge {
+  min-height: 4.8rem;
+}
+
+body.presentation-mode .dashboard-stats {
+  margin-bottom: 0.8rem;
+}
+
+body.presentation-mode .stat-card {
+  padding: 0.72rem 0.95rem;
+}
+
+body.presentation-mode .stat-card strong {
+  font-size: clamp(1.7rem, 3.1vw, 2.35rem);
+}
+
+body.presentation-mode .event-layout {
+  grid-template-columns: minmax(33rem, 1.32fr) minmax(20rem, 0.68fr);
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+body.presentation-mode .wheel-card {
+  padding: 1rem;
+}
+
+body.presentation-mode .wheel-card .section-heading h2 {
+  font-size: 1rem;
+}
+
+body.presentation-mode .wheel-card .section-heading h2 svg,
+body.presentation-mode .winner-log-panel h2 svg {
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0.26rem;
+}
+
+body.presentation-mode .winner-log-panel {
+  padding: 1rem;
+}
+
+body.presentation-mode .ticket-entry-panel,
+body.presentation-mode .event-import-panel,
+body.presentation-mode .participant-panel,
+body.presentation-mode .host-controls-panel {
+  display: none;
+}
+
+body.presentation-mode .winner-log-panel .section-heading {
+  margin-bottom: 0.75rem;
+}
+
+body.presentation-mode #exportWinnerLogButton,
+body.presentation-mode .winner-remove-button {
+  display: none;
+}
+
+body.presentation-mode .wheel-wrap {
+  width: min(100%, 31rem);
+}
+
+body.presentation-mode .wheel-stage {
+  padding: 0.8rem;
+}
+
+body.presentation-mode .selected-prize-slot {
+  min-height: 4.6rem;
+}
+
+body.presentation-mode .winner-display {
+  margin-top: 0.55rem;
+}
+
 .empty-state {
   margin: 0;
   border: 1px dashed var(--line-strong);
@@ -1431,6 +1560,10 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
+  body.presentation-mode .event-layout {
+    grid-template-columns: 1fr;
+  }
+
   .event-rail {
     grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
   }
@@ -1443,6 +1576,10 @@ textarea:focus {
   .winner-log-list {
     max-height: 24rem;
     overflow: auto;
+  }
+
+  body.presentation-mode .winner-log-list {
+    max-height: 18rem;
   }
 }
 
@@ -1586,6 +1723,27 @@ textarea:focus {
   .ticket-form,
   .event-import-form {
     grid-template-columns: 1fr;
+  }
+
+  .presentation-toggle {
+    width: 100%;
+  }
+
+  body.presentation-mode .hero {
+    align-items: center;
+    text-align: center;
+  }
+
+  body.presentation-mode .hero-title {
+    text-align: center;
+  }
+
+  body.presentation-mode .event-kicker {
+    margin-left: auto;
+  }
+
+  body.presentation-mode .wheel-wrap {
+    width: min(100%, 27rem);
   }
 }
 
