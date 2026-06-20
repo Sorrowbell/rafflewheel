@@ -1,6 +1,7 @@
 const STORAGE_KEY = "raffleWheelFundraiserState";
 const LEGACY_NAMES_KEY = "raffleWheelNames";
-const SPIN_TIME = 5000;
+const MIN_SPIN_TIME = 6000;
+const MAX_SPIN_TIME = 8500;
 const ADD_PRIZE_VALUE = "__add_custom_prize__";
 const celebrationColors = ["#07184d", "#137d8d", "#ec4b1a", "#f7c800", "#3f8d35", "#1557c8", "#ffffff"];
 
@@ -811,15 +812,19 @@ function renderPrizePreview() {
   const selectedPrize = getPrizeByName(state.currentPrize);
   const kicker = document.createElement("span");
   const name = document.createElement("strong");
+  const helper = document.createElement("small");
 
   prizePreview.innerHTML = "";
+  prizePreview.setAttribute("aria-label", selectedPrize ? `Change prize from ${selectedPrize.name}` : "Select a prize");
   kicker.className = "prize-preview-kicker";
+  helper.className = "prize-preview-helper";
+  helper.textContent = selectedPrize ? "Click to change prize" : "Click to choose prize";
 
   if (!selectedPrize) {
     prizePreview.classList.add("is-empty");
     kicker.textContent = "Now Drawing";
     name.textContent = "Select a prize";
-    prizePreview.append(kicker, name);
+    prizePreview.append(kicker, name, helper);
     return;
   }
 
@@ -830,7 +835,60 @@ function renderPrizePreview() {
   icon.className = "prize-preview-icon";
   icon.textContent = selectedPrize.icon;
   name.textContent = selectedPrize.name;
-  prizePreview.append(kicker, icon, name);
+  prizePreview.append(kicker, icon, name, helper);
+}
+
+async function openPrizePicker() {
+  const previousPrize = state.currentPrize;
+
+  if (window.Swal) {
+    const inputOptions = getAllPrizes().reduce((options, prize) => {
+      options[prize.name] = `${prize.icon} ${prize.name}`;
+      return options;
+    }, {});
+
+    inputOptions[ADD_PRIZE_VALUE] = "+ Add prize...";
+
+    const result = await window.Swal.fire({
+      title: "Select prize",
+      input: "select",
+      inputOptions,
+      inputValue: state.currentPrize || "",
+      showCancelButton: true,
+      confirmButtonText: "Select",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#0f7280",
+      cancelButtonColor: "#667085",
+      background: "#fffaf1",
+      color: "#07184d",
+      customClass: {
+        popup: "prize-picker-popup",
+        input: "prize-picker-select"
+      }
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    if (result.value === ADD_PRIZE_VALUE) {
+      promptForCustomPrize(previousPrize);
+      return;
+    }
+
+    selectPrize(result.value);
+    return;
+  }
+
+  const prizeOptions = getAllPrizes();
+  const choice = prompt(
+    `Prize number:\n${prizeOptions.map((prize, index) => `${index + 1}. ${prize.name}`).join("\n")}`
+  );
+  const selectedPrize = prizeOptions[Math.floor(Number(choice)) - 1];
+
+  if (selectedPrize) {
+    selectPrize(selectedPrize.name);
+  }
 }
 
 function renderEventDataSummary() {
@@ -903,15 +961,7 @@ async function promptForCustomPrize(previousPrize) {
   renderApp();
 }
 
-function handlePrizeChange() {
-  const selectedPrize = prizeInput.value;
-  const previousPrize = state.currentPrize;
-
-  if (selectedPrize === ADD_PRIZE_VALUE) {
-    promptForCustomPrize(previousPrize);
-    return;
-  }
-
+function selectPrize(selectedPrize) {
   state.currentPrize = selectedPrize;
   highlightedWinnerKey = "";
 
@@ -926,6 +976,18 @@ function handlePrizeChange() {
 
   saveState();
   renderApp();
+}
+
+function handlePrizeChange() {
+  const selectedPrize = prizeInput.value;
+  const previousPrize = state.currentPrize;
+
+  if (selectedPrize === ADD_PRIZE_VALUE) {
+    promptForCustomPrize(previousPrize);
+    return;
+  }
+
+  selectPrize(selectedPrize);
 }
 
 function renderParticipantSummary() {
@@ -1141,6 +1203,7 @@ function spinWheel() {
   }
 
   const winningTicket = selectWinningTicket();
+  const spinTime = MIN_SPIN_TIME + Math.random() * (MAX_SPIN_TIME - MIN_SPIN_TIME);
   const sliceDegrees = 360 / state.entries.length;
   const sliceCenter = winningTicket.index * sliceDegrees + sliceDegrees / 2;
   const extraTurns = 5 + Math.floor(Math.random() * 3);
@@ -1158,13 +1221,14 @@ function spinWheel() {
   startTicking();
 
   currentRotation = targetRotation;
+  canvas.style.transition = `transform ${spinTime}ms cubic-bezier(0.12, 0.72, 0.12, 1)`;
   canvas.style.transform = `rotate(${currentRotation}deg)`;
 
   window.setTimeout(() => {
     stopTicking();
     playWinnerSound();
     finishSpin(winningTicket);
-  }, SPIN_TIME);
+  }, spinTime);
 }
 
 function finishSpin(winningTicket) {
@@ -1672,6 +1736,7 @@ function renderApp() {
 ticketForm.addEventListener("submit", addTickets);
 participantSearchInput.addEventListener("input", renderParticipantSummary);
 prizeInput.addEventListener("change", handlePrizeChange);
+prizePreview.addEventListener("click", openPrizePicker);
 eventFileInput.addEventListener("change", loadEventEntriesFromFile);
 loadEventDataButton.addEventListener("click", loadEventEntriesFromPaste);
 canvas.addEventListener("mousemove", handleWheelHover);
