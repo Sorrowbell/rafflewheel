@@ -34,78 +34,30 @@ const prizeAliases = {
 const posterPrizeOrder = new Map(defaultPrizes.map((prize, index) => [getPrizeKey(prize.name), index + 1]));
 
 const colors = [
+  "#ec4b1a",
+  "#137d8d",
+  "#f7c800",
+  "#1557c8",
+  "#3f8d35",
   "#d94b5d",
-  "#287c80",
-  "#f3b43f",
-  "#5b5fc7",
-  "#e26d3f",
-  "#3f9d68",
-  "#2e75b6",
-  "#b45ac9",
-  "#d98c2b",
-  "#48a6a7",
-  "#bf3f68",
-  "#6c8f36",
-  "#805ad5",
-  "#c05621",
-  "#319795",
-  "#d69e2e",
-  "#4c6fff",
-  "#9f7aea",
-  "#38a169",
-  "#ed64a6",
-  "#2b6cb0",
-  "#dd6b20",
-  "#7b341e",
-  "#667eea",
-  "#ff6b6b",
-  "#4ecdc4",
-  "#ffe66d",
-  "#1a535c",
-  "#ff9f1c",
+  "#6a329f",
+  "#fb8500",
   "#2ec4b6",
   "#e71d36",
-  "#6a4c93",
-  "#1982c4",
   "#8ac926",
-  "#ffca3a",
-  "#f72585",
-  "#7209b7",
-  "#3a0ca3",
-  "#4361ee",
-  "#4cc9f0",
-  "#06d6a0",
-  "#ffd166",
-  "#ef476f",
-  "#118ab2",
-  "#073b4c",
+  "#4c6fff",
   "#bc6c25",
-  "#dda15e",
-  "#606c38",
-  "#588157",
-  "#a3b18a",
   "#9d4edd",
-  "#c77dff",
+  "#06d6a0",
   "#ffafcc",
-  "#bde0fe",
-  "#fb8500",
-  "#219ebc",
-  "#023047",
-  "#d00000",
+  "#277da1",
   "#ffba08",
   "#6a994e",
-  "#386641",
-  "#f3722c",
-  "#577590",
-  "#43aa8b",
-  "#f94144",
-  "#90be6d",
-  "#277da1",
   "#b56576",
-  "#6d597a",
-  "#355070",
-  "#e56b6f",
-  "#eaac8b"
+  "#577590",
+  "#f72585",
+  "#dda15e",
+  "#023047"
 ];
 
 const state = {
@@ -157,6 +109,7 @@ let audioContext = null;
 let shuffledColors = shuffleColors(colors);
 let nextColorIndex = 0;
 const assignedNameColors = {};
+let activeColorSignature = "";
 
 function normalizeName(name) {
   return name.trim().replace(/\s+/g, " ");
@@ -303,6 +256,43 @@ function getColorForName(name) {
   }
 
   return assignedNameColors[nameKey];
+}
+
+function syncAssignedNameColors() {
+  const activeParticipants = getActiveParticipantKeys();
+  const colorSignature = activeParticipants.join("|");
+
+  if (colorSignature === activeColorSignature) {
+    return;
+  }
+
+  Object.keys(assignedNameColors).forEach((nameKey) => {
+    delete assignedNameColors[nameKey];
+  });
+
+  shuffledColors = shuffleColors(colors);
+  nextColorIndex = 0;
+  activeColorSignature = colorSignature;
+
+  activeParticipants.forEach((nameKey) => {
+    assignedNameColors[nameKey] = shuffledColors[nextColorIndex];
+    nextColorIndex += 1;
+
+    if (nextColorIndex >= shuffledColors.length) {
+      shuffledColors = shuffleColors(colors);
+      nextColorIndex = 0;
+    }
+  });
+}
+
+function getActiveParticipantKeys() {
+  const activeKeys = new Set();
+
+  state.entries.forEach((name) => {
+    activeKeys.add(getNameKey(name));
+  });
+
+  return [...activeKeys].sort((firstKey, secondKey) => firstKey.localeCompare(secondKey));
 }
 
 function showMessage(message, type = "error") {
@@ -818,13 +808,12 @@ function renderPrizePreview() {
   prizePreview.setAttribute("aria-label", selectedPrize ? `Change prize from ${selectedPrize.name}` : "Select a prize");
   kicker.className = "prize-preview-kicker";
   helper.className = "prize-preview-helper";
-  helper.textContent = selectedPrize ? "Click to change prize" : "Click to choose prize";
+  helper.textContent = "Click to choose prize";
 
   if (!selectedPrize) {
     prizePreview.classList.add("is-empty");
-    kicker.textContent = "Now Drawing";
     name.textContent = "Select a prize";
-    prizePreview.append(kicker, name, helper);
+    prizePreview.append(name, helper);
     return;
   }
 
@@ -835,7 +824,7 @@ function renderPrizePreview() {
   icon.className = "prize-preview-icon";
   icon.textContent = selectedPrize.icon;
   name.textContent = selectedPrize.name;
-  prizePreview.append(kicker, icon, name, helper);
+  prizePreview.append(kicker, icon, name);
 }
 
 async function openPrizePicker() {
@@ -1231,7 +1220,7 @@ function spinWheel() {
   }, spinTime);
 }
 
-function finishSpin(winningTicket) {
+async function finishSpin(winningTicket) {
   const prizeName = normalizeName(prizeInput.value);
 
   highlightedWinnerKey = getNameKey(winningTicket.name);
@@ -1239,34 +1228,33 @@ function finishSpin(winningTicket) {
   winnerPrizeText.textContent = prizeName ? prizeName : "";
   winnerDisplay.classList.add("has-winner");
   logWinner(winningTicket.name, prizeName);
+  saveState();
+  celebrateWinner();
+  await announceWinner(winningTicket.name, prizeName);
+
   state.currentPrize = "";
   if (hasEventRows()) {
     state.entries = [];
   }
   prizeInput.value = "";
+  canvas.style.transition = "none";
+  canvas.style.transform = "rotate(0deg)";
+  currentRotation = 0;
+  isSpinning = false;
   saveState();
-  celebrateWinner();
-  announceWinner(winningTicket.name, prizeName);
+  renderApp();
 
-  window.setTimeout(() => {
-    canvas.style.transition = "none";
-    canvas.style.transform = "rotate(0deg)";
-    currentRotation = 0;
-    isSpinning = false;
-    renderApp();
-
-    window.requestAnimationFrame(() => {
-      canvas.style.transition = "";
-    });
-  }, 650);
+  window.requestAnimationFrame(() => {
+    canvas.style.transition = "";
+  });
 }
 
 function announceWinner(winnerName, prizeName) {
   if (!window.Swal) {
-    return;
+    return Promise.resolve();
   }
 
-  window.Swal.fire({
+  return window.Swal.fire({
     title: "WINNER!",
     html: `
       <div class="winner-alert">
@@ -1723,6 +1711,7 @@ function escapeHTML(value) {
 }
 
 function renderApp() {
+  syncAssignedNameColors();
   renderPrizeOptions();
   renderEventDataSummary();
   saveState();
